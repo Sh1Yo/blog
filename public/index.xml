@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Empty</title>
+    <link>/</link>
+    <description>Recent content on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Sun, 08 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>About Me</title>
+      <link>/about-me/</link>
+      <pubDate>Mon, 16 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/about-me/</guid>
+      <description>I am doing web security since high school (2019). I was able to enroll in a top Russian university ITMO in 2021 but decided to leave in 2022, and now I am working as a web security tester in a top Russian cybersecurity company.
+I am open to collaborations. I usually keep an updated list of bugbounty targets (domain : headers : paths : status codes : parameters) to test new ideas on.</description>
+    </item>
+    
+    <item>
+      <title>[Real World CTF 2023] The cult of 8 bit</title>
+      <link>/ctf/thecultof8bit/</link>
+      <pubDate>Sun, 08 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/ctf/thecultof8bit/</guid>
+      <description>In this writeup, I will show my solution for The cult of 8 bit challenge from Real World CTF 2023. It was a client-side challenge where you must leak the admin post id to get the flag. I solved it in an unintended way by using the Same Origin Method Execution attack with xsleaks.
+Description Exploring the app TODOs Callbacks SOME attack Example Solution Description After downloading the source code, we can see a simple expressjs note-storing service.</description>
+    </item>
+    
+    <item>
+      <title>[Real World CTF 2023] The cult of 8 bit</title>
+      <link>/post/thecultof8bit/</link>
+      <pubDate>Sun, 08 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/post/thecultof8bit/</guid>
+      <description>In this writeup, I will show my solution for The cult of 8 bit challenge from Real World CTF 2023. It was a client-side challenge where you must leak the admin post id to get the flag. I solved it in an unintended way by using the Same Origin Method Execution attack with xsleaks.
+Description Exploring the app TODOs Callbacks SOME attack Example Solution Description After downloading the source code, we can see a simple expressjs note-storing service.</description>
+    </item>
+    
+    <item>
+      <title>[ASIS CTF 2022] Firewalled</title>
+      <link>/ctf/firewalled/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/ctf/firewalled/</guid>
+      <description>Here&amp;rsquo;s my writeup on the Firewalled ctf challenge from ASIS CTF 2022. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams.
+Description We&amp;rsquo;re given a docker-compose.yml file with two services: flag-container and firewalled-curl. The second one is exposed to the internet via the 8000 port. Both of them are flask apps behind apache.
+docker-compose.yml:
+version: &amp;#34;3.9&amp;#34; services: flag-container: build: .</description>
+    </item>
+    
+    <item>
+      <title>[ASIS CTF 2022] Firewalled</title>
+      <link>/post/firewalled/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/post/firewalled/</guid>
+      <description>Here&amp;rsquo;s my writeup on the Firewalled ctf challenge from ASIS CTF 2022. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams.
+Description We&amp;rsquo;re given a docker-compose.yml file with two services: flag-container and firewalled-curl. The second one is exposed to the internet via the 8000 port. Both of them are flask apps behind apache.
+docker-compose.yml:
+version: &amp;#34;3.9&amp;#34; services: flag-container: build: .</description>
+    </item>
+    
+    <item>
+      <title>[ASIS CTF 2022] Firewalled</title>
+      <link>/unkn0wn/firewalled/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/unkn0wn/firewalled/</guid>
+      <description>Here&amp;rsquo;s my writeup on the Firewalled ctf challenge from ASIS CTF 2022. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams.
+Description We&amp;rsquo;re given a docker-compose.yml file with two services: flag-container and firewalled-curl. The second one is exposed to the internet via the 8000 port. Both of them are flask apps behind apache.
+docker-compose.yml:
+version: &amp;#34;3.9&amp;#34; services: flag-container: build: .</description>
+    </item>
+    
+    <item>
+      <title>[Real World CTF 2023] The cult of 8 bit</title>
+      <link>/rcekaemnksidoefsnmqnm-jteru_q4mx/firewalled/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/rcekaemnksidoefsnmqnm-jteru_q4mx/firewalled/</guid>
+      <description>In this writeup, I will show my solution for The cult of 8 bit challenge from Real World CTF 2023. It was a client-side challenge where you must leak the admin post id to get the flag. I solved it in an unintended way by using the Same Origin Method Execution attack.
+Description Exploring the app TODOs Callbacks SOME attack Example Solution Description After downloading the source code, we can see a simple expressjs note-storing service.</description>
+    </item>
+    
+    <item>
+      <title>[ru] resume</title>
+      <link>/x9txqfk90gf0qjs8sbif8j_cjp6epm6a/resume/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/x9txqfk90gf0qjs8sbif8j_cjp6epm6a/resume/</guid>
+      <description>About me
+Skills
+Web
+Tools
+Vulnerabilities
+Technologies
+Programming Languages
+Coding
+Achievements Languages Soft Skills About me Студент 2 курса университета ИТМО. Занимаюсь безопасностью web приложений на протяжении уже более 3-х лет. Первые 2 года занимался bug bounty:
+https://hackerone.com/sh1yo https://bugcrowd.com/sh1yo После этого, с поступлением в университет, вступил в ctf команду m17m0, в которой мы одержали победу в первом же нашем соревновании student ctf 2021.
+В большинстве случаев моих навыков достаточно для решения некоторых medium и hard web тасков на ctf соревнованиях.</description>
+    </item>
+    
+    <item>
+      <title>Resume</title>
+      <link>/resume/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/resume/</guid>
+      <description>About me
+Skills
+Web
+Tools
+Vulnerabilities
+Technologies
+Programming Languages
+Coding
+Achievements Languages Soft Skills About me Студент 2 курса университета ИТМО. Занимаюсь безопасностью web приложений на протяжении уже более 3-х лет. Первые 2 года занимался bug bounty:
+https://hackerone.com/sh1yo https://bugcrowd.com/sh1yo После этого, с поступлением в университет, вступил в ctf команду m17m0, в которой мы одержали победу в первом же нашем соревновании student ctf 2021.
+В большинстве случаев моих навыков достаточно для решения некоторых medium и hard web тасков на ctf соревнованиях.</description>
+    </item>
+    
+    <item>
+      <title>[CTFZone 2022] ProxyHell</title>
+      <link>/ctf/proxyhell/</link>
+      <pubDate>Sat, 27 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/ctf/proxyhell/</guid>
+      <description>I do like proxy-related challenges, so I decided to share my solution for the CTFZone ProxyHell challenge. Despite it wasn’t a hard task, only 3 teams solved it in the end.
+Initial observing We have a docker-compose.yml file with 5 images - apache, varnish, nginx-ldap, nginx, openldap. If we do grep -r flag, we will see that the flag is within the index.html page: app/index.html:&amp;lt;h1&amp;gt;CTFZone{Test_flag}&amp;lt;/h1&amp;gt;. If we try to access the root of the server &amp;ndash; we will get a 403 forbidden error:</description>
+    </item>
+    
+    <item>
+      <title>[CTFZone 2022] ProxyHell</title>
+      <link>/post/proxyhell/</link>
+      <pubDate>Sat, 27 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/post/proxyhell/</guid>
+      <description>I do like proxy-related challenges, so I decided to share my solution for the CTFZone ProxyHell challenge. Despite it wasn’t a hard task, only 3 teams solved it in the end.
+Initial observing We have a docker-compose.yml file with 5 images - apache, varnish, nginx-ldap, nginx, openldap. If we do grep -r flag, we will see that the flag is within the index.html page: app/index.html:&amp;lt;h1&amp;gt;CTFZone{Test_flag}&amp;lt;/h1&amp;gt;. If we try to access the root of the server &amp;ndash; we will get a 403 forbidden error:</description>
+    </item>
+    
+    <item>
+      <title>Fuzzing JWT</title>
+      <link>/klafjshd/fuzzing_jwt/</link>
+      <pubDate>Fri, 29 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/klafjshd/fuzzing_jwt/</guid>
+      <description>JSON Web Tokens are usually used to store the identity of authenticated users. JWT has a structure of two JSON objects (header and body) and a signature. They&amp;rsquo;re base64 encoded and divided by dot:
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoidXNlciJ9.ja1aHgEkWUMCJABchgx1ppiKU3eoX0coLqmOGe557zo
+&amp;mdash; example JWT
+Sometimes you may end up in a situation where you need to test a JWT. Either you can sign your own JWT, or you want to test just the header part. But due to the structure of a JWT, it’s impossible to pass it directly to the tools like sqlmap or burp intruder.</description>
+    </item>
+    
+    <item>
+      <title>Fuzzing JWT</title>
+      <link>/post/fuzzing_jwt/</link>
+      <pubDate>Fri, 29 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/post/fuzzing_jwt/</guid>
+      <description>JSON Web Tokens are usually used to store the identity of authenticated users. JWT has a structure of two JSON objects (header and body) and a signature. They&amp;rsquo;re base64 encoded and divided by dot:
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoidXNlciJ9.ja1aHgEkWUMCJABchgx1ppiKU3eoX0coLqmOGe557zo
+&amp;mdash; example JWT
+Sometimes you may end up in a situation where you need to test a JWT. Either you can sign your own JWT, or you want to test just the header part. But due to the structure of a JWT, it’s impossible to pass it directly to the tools like sqlmap or burp intruder.</description>
+    </item>
+    
+    <item>
+      <title>[socket.io] Cross-Site Websockets Hijacking</title>
+      <link>/post/websocket_hijacking/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/websocket_hijacking/</guid>
+      <description>The socket.io module was vulnerable to cross-site websocker hijacking attack due to the incorrect parsing of the http Origin header. The vulnerability was found in 2.3.0 version.
+Socket.IO enables real-time bidirectional event-based communication
+Links original report.
+Proof of concept: app.js:
+var app = require(&amp;#39;express&amp;#39;)(); var http = require(&amp;#39;http&amp;#39;).createServer(app); var io = require(&amp;#39;socket.io&amp;#39;)(http); io.origins([&amp;#39;http://localhost:80&amp;#39;]); //we believe that this module will decline other origins app.get(&amp;#39;/&amp;#39;, (req, res) =&amp;gt; { res.sendFile(__dirname + &amp;#39;/index.html&amp;#39;); }); io.</description>
+    </item>
+    
+    <item>
+      <title>[socket.io] Cross-Site Websockets Hijacking</title>
+      <link>/vulnerabilities/websocket_hijacking/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/vulnerabilities/websocket_hijacking/</guid>
+      <description>The socket.io module was vulnerable to cross-site websocker hijacking attack due to the incorrect parsing of http Origin header. The vulnerability was identified in 2.3.0 version.
+Socket.IO enables real-time bidirectional event-based communication
+Links original report.
+Proof of concept: app.js:
+var app = require(&amp;#39;express&amp;#39;)(); var http = require(&amp;#39;http&amp;#39;).createServer(app); var io = require(&amp;#39;socket.io&amp;#39;)(http); io.origins([&amp;#39;http://localhost:80&amp;#39;]); //we believe that this module will decline other origins app.get(&amp;#39;/&amp;#39;, (req, res) =&amp;gt; { res.sendFile(__dirname + &amp;#39;/index.html&amp;#39;); }); io.</description>
+    </item>
+    
+    <item>
+      <title>SEC-596</title>
+      <link>/post/sec-596/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/sec-596/</guid>
+      <description>Invalid UTF-8 characters could trigger cPanel to use the Legacy Login page. This page did not adequately encode output. This could allow for an attacker to inject arbitrary JavaScript code into the rendered page.
+Links cpanel disclosure
+Proof of concept https://[target]:2083/login?user=sth%22+onfocus=%22alert()%22+id=%22xss%22+%22%ff#xss</description>
+    </item>
+    
+    <item>
+      <title>SEC-596</title>
+      <link>/vulnerabilities/sec-596/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/vulnerabilities/sec-596/</guid>
+      <description>Invalid UTF-8 characters could trigger cPanel to use the Legacy Login page. This page did not adequately encode output. This could allow for an attacker to inject arbitrary JavaScript code into the rendered page.
+Links cpanel disclosure
+Proof of concept https://[target]:2083/login?user=sth%22+onfocus=%22alert()%22+id=%22xss%22+%22%ff#xss</description>
+    </item>
+    
+    <item>
+      <title>Parameter discovery tools comparison</title>
+      <link>/x8stats/</link>
+      <pubDate>Thu, 01 Jul 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/x8stats/</guid>
+      <description>Some people asked me about publishing a comparison between x8 and other major tools for parameter discovery: Arjun and Param Miner, so here it is!
+Parameter discovery tools help to find parameters that can be vulnerable or able to reveal some hidden features. In this post, I am going to check the speed and accuracy of these tools. For tests, I used a wordlist with 26k parameters. If you don&amp;rsquo;t have time to read the whole post - you can go directly to the summary at the end of a page.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>/tools/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/tools/</guid>
+      <description>X8 - Hidden parameters discovery suite The tool helps to find hidden parameters that can be vulnerable or can reveal interesting functionality that other hunters miss. Greater accuracy is achieved thanks to the line-by-line comparison of pages, comparison of response code and reflections. More details
+Request smuggler - Http request smuggling vulnerability scanner Check whether the server can be vulnerable to http request smuggling vulnerability. More details</description>
+    </item>
+    
+    <item>
+      <title>Contact Me</title>
+      <link>/contact/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/contact/</guid>
+      <description>mail: sh1yo@4rt.one
+tg: @sh1y0
+I rarely answer to a simple Hi from strangers, so make sure to follow nometa.</description>
+    </item>
+    
+    <item>
+      <title>x8 Documentation</title>
+      <link>/x8docs/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/x8docs/</guid>
+      <description>User Interface Command line arguments http request from file http request from command-line arguments Parameters Behavior Concurrency Output User Interface Usually, the tool&amp;rsquo;s output looks like this:
+Command line arguments http request from file -r --request &amp;lt;filename&amp;gt; This option specifies the file containing the raw HTTP request.
+When using a request file, the tool does not add default headers such as Accept and User-Agent to the request.
+At present, the URL is created directly from the Host header, so it is not possible to set an arbitrary Host header from within a request file.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tools on Empty</title>
+    <link>/tags/tools/</link>
+    <description>Recent content in tools on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Thu, 01 Jul 2021 00:00:00 +0000</lastBuildDate><atom:link href="/tags/tools/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Parameter discovery tools comparison</title>
+      <link>/x8stats/</link>
+      <pubDate>Thu, 01 Jul 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/x8stats/</guid>
+      <description>Some people asked me about publishing a comparison between x8 and other major tools for parameter discovery: Arjun and Param Miner, so here it is!
+Parameter discovery tools help to find parameters that can be vulnerable or able to reveal some hidden features. In this post, I am going to check the speed and accuracy of these tools. For tests, I used a wordlist with 26k parameters. If you don&amp;rsquo;t have time to read the whole post - you can go directly to the summary at the end of a page.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Vulnerabilities on Empty</title>
+    <link>/vulnerabilities/</link>
+    <description>Recent content in Vulnerabilities on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Mon, 29 Nov 2021 00:00:00 +0000</lastBuildDate><atom:link href="/vulnerabilities/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[socket.io] Cross-Site Websockets Hijacking</title>
+      <link>/vulnerabilities/websocket_hijacking/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/vulnerabilities/websocket_hijacking/</guid>
+      <description>The socket.io module was vulnerable to cross-site websocker hijacking attack due to the incorrect parsing of http Origin header. The vulnerability was identified in 2.3.0 version.
+Socket.IO enables real-time bidirectional event-based communication
+Links original report.
+Proof of concept: app.js:
+var app = require(&amp;#39;express&amp;#39;)(); var http = require(&amp;#39;http&amp;#39;).createServer(app); var io = require(&amp;#39;socket.io&amp;#39;)(http); io.origins([&amp;#39;http://localhost:80&amp;#39;]); //we believe that this module will decline other origins app.get(&amp;#39;/&amp;#39;, (req, res) =&amp;gt; { res.sendFile(__dirname + &amp;#39;/index.html&amp;#39;); }); io.</description>
+    </item>
+    
+    <item>
+      <title>SEC-596</title>
+      <link>/vulnerabilities/sec-596/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/vulnerabilities/sec-596/</guid>
+      <description>Invalid UTF-8 characters could trigger cPanel to use the Legacy Login page. This page did not adequately encode output. This could allow for an attacker to inject arbitrary JavaScript code into the rendered page.
+Links cpanel disclosure
+Proof of concept https://[target]:2083/login?user=sth%22+onfocus=%22alert()%22+id=%22xss%22+%22%ff#xss</description>
+    </item>
+    
+  </channel>
+</rss>

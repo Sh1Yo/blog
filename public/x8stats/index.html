@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html><head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Parameter discovery tools comparison - Empty</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Some people asked me about publishing a comparison between x8 and other major tools for parameter discovery: Arjun and Param Miner, so here it is!
+Parameter discovery tools help to find parameters that can be vulnerable or able to reveal some hidden features. In this post, I am going to check the speed and accuracy of these tools. For tests, I used a wordlist with 26k parameters. If you don&rsquo;t have time to read the whole post - you can go directly to the summary at the end of a page." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="Parameter discovery tools comparison" />
+<meta property="og:description" content="Some people asked me about publishing a comparison between x8 and other major tools for parameter discovery: Arjun and Param Miner, so here it is!
+Parameter discovery tools help to find parameters that can be vulnerable or able to reveal some hidden features. In this post, I am going to check the speed and accuracy of these tools. For tests, I used a wordlist with 26k parameters. If you don&rsquo;t have time to read the whole post - you can go directly to the summary at the end of a page." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/x8stats/" /><meta property="article:section" content="" />
+<meta property="article:published_time" content="2021-07-01T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-07-01T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Parameter discovery tools comparison"/>
+<meta name="twitter:description" content="Some people asked me about publishing a comparison between x8 and other major tools for parameter discovery: Arjun and Param Miner, so here it is!
+Parameter discovery tools help to find parameters that can be vulnerable or able to reveal some hidden features. In this post, I am going to check the speed and accuracy of these tools. For tests, I used a wordlist with 26k parameters. If you don&rsquo;t have time to read the whole post - you can go directly to the summary at the end of a page."/>
+<script src="js/feather.min.js"></script>
+	
+	
+        <link href="/css/fonts.b685ac6f654695232de7b82a9143a46f9e049c8e3af3a21d9737b01f4be211d1.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="/css/main.4ddabd7503f7a39f08b1332805fc618e47fe65490f3c282a3dad46df59697a76.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="/css/dark.1b1ad67986b5fb2bdf5cdb491e362b3f0a64f1604dde010230e849731b54e308.css"   />
+	
+	
+	
+		
+		
+		<link rel="stylesheet" type="text/css" href="/css/custom.cc7145a74b085829cf7d0439eac46ecfdb25c97969e01198fb9417e77591b0b8.css">
+		
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="">Empty</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/ctf">CTF writeups</a>
+		
+		<a href="/vulnerabilities">Vulnerabilities</a>
+		
+		<a href="/tools">Tools</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">Parameter discovery tools comparison</h1>
+			<div class="meta">Posted on Jul 1, 2021</div>
+		</div>
+		
+
+		<section class="body">
+			<p>Some people asked me about publishing a comparison between <a href="https://github.com/sh1yo/x8">x8</a> and other major tools for parameter discovery: <a href="https://github.com/s0md3v/Arjun/">Arjun</a> and <a href="https://github.com/PortSwigger/param-miner">Param Miner</a>, so here it is!</p>
+<p>Parameter discovery tools help to find parameters that can be vulnerable or able to reveal some hidden features. In this post, I am going to check the speed and accuracy of these tools. For tests, I used a <a href="https://twitter.com/sh1yo_/status/1410862366275817472?s=20">wordlist</a> with 26k parameters. If you don&rsquo;t have time to read the whole post - you can go directly to the summary at the end of a page.</p>
+<h2 id="tools">Tools</h2>
+<h4 id="x8-v200httpsgithubcomsh1yox8"><a href="https://github.com/sh1yo/x8">x8 v2.0.0</a></h4>
+<p>Used &ndash;disable-custom-parameters flag because none of the other testing tools has this functionality.</p>
+<h4 id="arjun-v213httpsgithubcoms0md3varjun"><a href="https://github.com/s0md3v/Arjun/">arjun v2.1.3</a></h4>
+<p>Used -c 256 flag because the initial amount of parameters per request is too huge and some pages ignore the rest of the parameters or throw some errors. Also, I modified error_handler.py:29 because it causes the tool to stop on 400 HTTP code.</p>
+<h4 id="param-miner-v128httpsgithubcomportswiggerparam-miner"><a href="https://github.com/PortSwigger/param-miner">param miner v1.28</a></h4>
+<p>Used disable origin cachebuster, disable basic wordlist, force bucketsize = 256 (sometimes works very bad and sends 6-12 parameters per request), disable response (this flag allows the tool to search parameters in every response. I don&rsquo;t like it because sometimes it increases the number of requests by a few times), use custom wordlist flags.<br>
+Default request:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#06b6ef">GET</span> <span style="color:#fec418">/PATH</span> <span style="color:#815ba4">HTTP</span><span style="color:#5bc4bf">/</span><span style="color:#f99b15">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">host</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36</span>
+</span></span><span style="display:flex;"><span>Accept-Charset<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">utf-8, iso-8859-1;q=0.5, *;q=0.1</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">en-US, *;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#5bc4bf">:</span> <span style="color:#f99b15">*/*</span>
+</span></span></code></pre></div><h2 id="targets">Targets</h2>
+<p>To perform the comparison I chose my test domain and a few popular domains like google.com, yandex.ru, github.com, youtube.com, then I ran a crawler on these domains and selected the most interesting paths.<br>
+Some info about custom targets: 4rt.one and 4rt.one/json contain a lot of different parameters that, I believe, can cover most of the real-life cases.</p>
+<h2 id="results">Results</h2>
+<h3 id="accuracy">Accuracy</h3>
+<p>The next tables show the statistic across 10 endpoints.</p>
+<h4 id="parameters-found-by-every-tool-and-how-many-requests-did-it-take">Parameters found by every tool and how many requests did it take</h4>
+<table>
+<tr style="background-color:#484848;color:white;">
+<th>x8</th>
+<th>requests</th>
+<th>parameters</th>
+</tr>
+<tr>
+<td>4rt.one</td>
+<td>231</td>
+<td>admin, copy, email, facebook, test, z</td>
+</tr>
+<tr>
+<td> * 4rt.one/json?filename=sth</td>
+<td>104</td>
+<td>email, role, tag, username</td>
+</tr>
+<tr>
+<td>www.google.com</td>
+<td>217</td>
+<td>
+<details>
+<summary>37 parameters</summary>
+ad, client, complete, cr, dnr, domains, gc, gcs, gl, gll, gm, gpc, gr, h, host, hq, imgtype, imgurl, interests, lr, lsf, pws, q, query, rcu, rls, rlz, sab, si, sie, sky, sz, tbm, tnm, ur, v, w
+</details>
+</td>
+</tr>
+<tr>
+<td>www.google.com/services</td>
+<td>147</td>
+<td>rs, sqp</td>
+</tr>
+<tr>
+<td>www.google.com/advanced\_search</td>
+<td>156</td>
+<td>as\_epq, as\_eq, as\_filetype, as\_nhi, as\_nlo, as\_oq, as\_q, as\_sitesearch, cr, q, query, tbm</td>
+</tr>
+<tr>
+<td>yandex.ru/company</td>
+<td>165</td>
+<td>from, tag</td>
+</tr>
+<tr>
+<td>github.com/about</td>
+<td>148</td>
+<td>page, q, return\_to, utm\_campaign, utm\_medium, utm\_source, utm\_term</td>
+</tr>
+<tr>
+<td>www.youtube.com/about/</td>
+<td>147</td>
+<td>rs, sqp</td>
+</tr>
+<tr>
+<td>www.youtube.com/t/terms</td>
+<td>130</td>
+<td>auth</td>
+</tr>
+<tr>
+<td>www.youtube.com/new</td>
+<td>156</td>
+<td>auth, bp, cbr, cos, pbj, spf</td>
+</tr>
+<tr style="background-color:#484848;color:white;">
+<th>arjun</th>
+<th>reqs</th>
+<th>parameters</th>
+</tr>
+<tr>
+<td>4rt.one</td>
+<td>167</td>
+<td>z, facebook, test, email</td>
+</tr>
+<tr>
+<td> * 4rt.one/json?filename=sth</td>
+<td>infinity loop of requests</td>
+<td></td>
+</tr>
+<tr>
+<td>www.google.com</td>
+<td>119</td>
+<td>
+tbm
+</td>
+</tr>
+<tr>
+<td>www.google.com/services</td>
+<td>135</td>
+<td>rs, sqp</td>
+</tr>
+<tr>
+<td>www.google.com/advanced\_search</td>
+<td>124</td>
+<td>tbm</td>
+</tr>
+<tr>
+<td>yandex.ru/company</td>
+<td>103</td>
+<td></td>
+</tr>
+<tr>
+<td>github.com/about</td>
+<td>133</td>
+<td>page, id</td>
+</tr>
+<tr>
+<td>www.youtube.com/about/</td>
+<td>133</td>
+<td>rs, sqp</td>
+</tr>
+<tr>
+<td>www.youtube.com/t/terms</td>
+<td>106</td>
+<td>auth</td>
+</tr>
+<tr>
+<td>www.youtube.com/new</td>
+<td>105</td>
+<td></td>
+</tr>
+<tr style="background-color:#484848;color:white;">
+<th>param miner</th>
+<th>reqs</th>
+<th>parameters</th>
+</tr>
+<tr>
+<td>4rt.one</td>
+<td>372</td>
+<td>copy, test, z</td>
+</tr>
+<tr>
+<td> * 4rt.one/json?filename=sth</td>
+<td>132</td>
+<td>email, tag, username</td>
+</tr>
+<tr>
+<td>www.google.com</td>
+<td>1178</td>
+<td>
+ad, client, complete, cr, domains, tbm, tnm, lr, pws, rcu, rlz, tnm, ur
+</td>
+</tr>
+<tr>
+<td>www.google.com/services</td>
+<td>255</td>
+<td>rs, sqp</td>
+</tr>
+<tr>
+<td> ** www.google.com/advanced\_search</td>
+<td>429</td>
+<td>as\_epq, as\_eq, as\_filetype, as\_nhi, as\_nlo, as\_oq, as\_q, as\_sitesearch, cr, q, query, tbm</td>
+</tr>
+<tr>
+<td>yandex.ru/company</td>
+<td>294</td>
+<td>from, tag</td>
+</tr>
+<tr>
+<td>github.com/about</td>
+<td>132</td>
+<td></td>
+</tr>
+<tr>
+<td>www.youtube.com/about/</td>
+<td>253</td>
+<td>rs, sqp</td>
+</tr>
+<tr>
+<td>www.youtube.com/t/terms</td>
+<td>179</td>
+<td>auth</td>
+</tr>
+<tr>
+<td>www.youtube.com/new</td>
+<td>292</td>
+<td>auth, bp</td>
+</tr>
+</table>
+<p>* - send parameters via json body. 512 parameters per request<br>
+** - as_parameters were manually added to the list because I disabled searching words in the response</p>
+<h4 id="average-number-of-requests-needed-for-1-parameter">Average number of requests needed for 1 parameter</h4>
+<table>
+<tr style="background-color:#484848;color:white;">
+<th>tool</th>
+<th>requests per parameter</th>
+</tr>
+<tr>
+<td>x8</td>
+<td>54</td>
+</tr>
+<tr>
+<td>arjun</td>
+<td>85</td>
+</tr>
+<tr>
+<td>param miner</td>
+<td>118</td>
+</tr>
+</table>
+<p>I removed <a href="https://www.google.com/">www.google.com/</a> from the count in this and the second table because 45% of the parameters were found there.</p>
+<h4 id="missing-parameters">Missing parameters</h4>
+<table>
+<tr style="background-color:#484848;color:white;">
+<th>tool</th>
+<th>Count</th>
+<th>%</th>
+</tr>
+<tr>
+<td>x8</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>arjun</td>
+<td>29</td>
+<td>70</td>
+</tr>
+<tr>
+<td>param miner</td>
+<td>16</td>
+<td>36</td>
+</tr>
+</table>
+<h3 id="speed">Speed</h3>
+<p>The next table represents a speed of each tool. Target used - 4rt.one/load?size=n on localhost.
+I am making comparisons on my laptop with: <br>
+OS: 5.12.9-arch1-1<br>
+CPU: Intel i3-7020U</p>
+<table>
+<tr style="background-color:#484848;color:white;">
+<th>tool</th>
+<th>size=10(300kb)</th>
+<th>size=25(750kb)</th>
+<th>size=50(1500kb)</th>
+<th>speed</th>
+</tr>
+<tr>
+<td> * ** x8</td>
+<td>10.144s</td>
+<td>22.232s</td>
+<td>44.784s</td>
+<td>1</td>
+</tr>
+<tr>
+<td>x8 7 threads</td>
+<td>9.360s</td>
+<td>22.085s</td>
+<td>44.288s</td>
+<td></td>
+</tr>
+<tr>
+<td>arjun</td>
+<td>14.174s</td>
+<td>28.956s</td>
+<td>52.904s</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>arjun 7 threads</td>
+<td>13.161s</td>
+<td>28.821s</td>
+<td>53.768s</td>
+<td></td>
+</tr>
+<tr>
+<td>param miner</td>
+<td>10s</td>
+<td>37s</td>
+<td>61s</td>
+<td>0.71</td>
+</tr>
+</table>
+<p>*** - Force 256 parameters per request as well as in other tools.</p>
+<h2 id="summary">Summary</h2>
+<table>
+<tr style="background-color:#484848;color:white;">
+<th>#</th>
+<th>tool</th>
+<th>requests per parameter</th>
+<th>accuracy</th>
+<th>speed</th>
+</tr>
+<tr>
+<th>1</th>
+<td>x8</td>
+<td>54</td>
+<td>98%</td>
+<td>1</td>
+</tr>
+<tr>
+<th>2</th>
+<td>param miner</td>
+<td>118</td>
+<td>64%</td>
+<td>0.71</td>
+</tr>
+<tr>
+<th>3</th>
+<td>arjun</td>
+<td>85</td>
+<td>30%</td>
+<td>0.8</td>
+</tr>
+</table>
+<h2 id="final-thoughts--conclusion">Final thoughts &amp; conclusion</h2>
+<p>Anyway, some stats can be very inaccurate due to the small number of test endpoints and the inability to know the exact number of parameters, but yet they are able to show a rough picture. Most of the time param miner and arjun fails to detect parameters with a different number of reflections and some difficult cases.<br></p>
+<p>Feel free to suggest other tools and endpoints in <a href="https://t.me/sh1y0">telegram</a> or <a href="https://twitter.com/sh1yo_">twitter</a>. If you believe you found a mistake in the data - compare the versions of your tools with the tested versions and make sure you run the tool at least 3-4 times because sometimes results can be different each run. If the version of tools is correct and the main part of tries gives you different results - write to me.<Paste></p>
+
+		</section>
+
+		<div class="post-tags">
+			
+		</div>
+	</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/sh1yo" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/sh1yo_/" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2023  © sh1yo |  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NTWQD4HQWT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-NTWQD4HQWT', { 'anonymize_ip': false });
+}
+</script>
+<Paste><script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

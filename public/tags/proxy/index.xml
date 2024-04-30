@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>proxy on Empty</title>
+    <link>/tags/proxy/</link>
+    <description>Recent content in proxy on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Sat, 27 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="/tags/proxy/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[CTFZone 2022] ProxyHell</title>
+      <link>/ctf/proxyhell/</link>
+      <pubDate>Sat, 27 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/ctf/proxyhell/</guid>
+      <description>I do like proxy-related challenges, so I decided to share my solution for the CTFZone ProxyHell challenge. Despite it wasn’t a hard task, only 3 teams solved it in the end.
+Initial observing We have a docker-compose.yml file with 5 images - apache, varnish, nginx-ldap, nginx, openldap. If we do grep -r flag, we will see that the flag is within the index.html page: app/index.html:&amp;lt;h1&amp;gt;CTFZone{Test_flag}&amp;lt;/h1&amp;gt;. If we try to access the root of the server &amp;ndash; we will get a 403 forbidden error:</description>
+    </item>
+    
+    <item>
+      <title>[CTFZone 2022] ProxyHell</title>
+      <link>/post/proxyhell/</link>
+      <pubDate>Sat, 27 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/post/proxyhell/</guid>
+      <description>I do like proxy-related challenges, so I decided to share my solution for the CTFZone ProxyHell challenge. Despite it wasn’t a hard task, only 3 teams solved it in the end.
+Initial observing We have a docker-compose.yml file with 5 images - apache, varnish, nginx-ldap, nginx, openldap. If we do grep -r flag, we will see that the flag is within the index.html page: app/index.html:&amp;lt;h1&amp;gt;CTFZone{Test_flag}&amp;lt;/h1&amp;gt;. If we try to access the root of the server &amp;ndash; we will get a 403 forbidden error:</description>
+    </item>
+    
+  </channel>
+</rss>

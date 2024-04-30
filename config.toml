@@ -1,0 +1,57 @@
+# baseURL = "https://sh1yo.art/"
+languageCode = "en-us"
+title = "Empty"
+theme="archie"
+copyright = "© sh1yo"
+# Code Highlight
+pygmentsstyle = "paraiso-dark"
+pygmentscodefences = true
+pygmentscodefencesguesssyntax = true
+
+paginate=3 # articles per page
+
+googleAnalytics="G-NTWQD4HQWT"
+
+[params]
+	googleAnalytics="G-NTWQD4HQWT"
+	mode="dark" # color-mode → light,dark,toggle or auto
+	useCDN=false # don't use CDNs for fonts and icons, instead serve them locally.
+	subtitle = "sh1yo's blog"
+    customcss = ["css/custom.css"]
+
+# Social Tags
+
+[[params.social]]
+name = "GitHub"
+icon = "github"
+url = "https://github.com/sh1yo"
+
+[[params.social]]
+name = "Twitter"
+icon = "twitter"
+url = "https://twitter.com/sh1yo_/"
+
+# Main menu Items
+
+[[menu.main]]
+name = "Home"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "Vulnerabilities"
+url = "/vulnerabilities"
+weight = 2
+
+[[menu.main]]
+name = "Tools"
+url = "/tools"
+weight = 3
+
+[[menu.main]]
+name = "CTF writeups"
+url = "/ctf"
+weight = 2
+
+[markup.goldmark.renderer]
+unsafe= true

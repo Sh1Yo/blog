@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html><head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Fuzzing JWT - Empty</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="A way to automate the generation of JWT with the help of mitmproxy." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="Fuzzing JWT" />
+<meta property="og:description" content="A way to automate the generation of JWT with the help of mitmproxy." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/post/fuzzing_jwt/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-07-29T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-07-29T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Fuzzing JWT"/>
+<meta name="twitter:description" content="A way to automate the generation of JWT with the help of mitmproxy."/>
+<script src="js/feather.min.js"></script>
+	
+	
+        <link href="/css/fonts.b685ac6f654695232de7b82a9143a46f9e049c8e3af3a21d9737b01f4be211d1.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="/css/main.4ddabd7503f7a39f08b1332805fc618e47fe65490f3c282a3dad46df59697a76.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="/css/dark.1b1ad67986b5fb2bdf5cdb491e362b3f0a64f1604dde010230e849731b54e308.css"   />
+	
+	
+	
+		
+		
+		<link rel="stylesheet" type="text/css" href="/css/custom.cc7145a74b085829cf7d0439eac46ecfdb25c97969e01198fb9417e77591b0b8.css">
+		
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="">Empty</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/ctf">CTF writeups</a>
+		
+		<a href="/vulnerabilities">Vulnerabilities</a>
+		
+		<a href="/tools">Tools</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">Fuzzing JWT</h1>
+			<div class="meta">Posted on Jul 29, 2022</div>
+		</div>
+		
+
+		<section class="body">
+			<p>JSON Web Tokens are usually used to store the identity of authenticated users. JWT has a structure of two JSON objects (header and body) and a signature. They&rsquo;re base64 encoded and divided by dot:</p>
+<p><span style="color:lightblue">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9</span>.<span style="color:pink">eyJyb2xlIjoidXNlciJ9</span>.<span style="color:violet">ja1aHgEkWUMCJABchgx1ppiKU3eoX0coLqmOGe557zo</span></p>
+<p>&mdash; example JWT</p>
+<p>Sometimes you may end up in a situation where you need to test a JWT. Either you can sign your own JWT, or you want to test just the header part. But due to the structure of a JWT, it’s impossible to pass it directly to the tools like <a href="https://github.com/sqlmapproject/sqlmap">sqlmap</a> or <a href="https://portswigger.net/burp">burp</a> intruder.</p>
+<p>In this post, I am showing a way to automate the creation of JWT with the help of <a href="https://github.com/mitmproxy/mitmproxy">mitmproxy</a>.</p>
+<h3 id="proxy">Proxy</h3>
+<p>You will need to have <a href="https://github.com/mitmproxy/mitmproxy">mitmproxy</a> installed. It is a convenient tool for modifying requests and responses on the fly with the help of simple python3 scripts.</p>
+<p>Example mitmproxy script to show the basic functionality:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">request</span>(flow):
+</span></span><span style="display:flex;"><span>    flow<span style="color:#5bc4bf">.</span>request<span style="color:#5bc4bf">.</span>query[<span style="color:#48b685">&#34;jwt&#34;</span>] <span style="color:#5bc4bf">=</span> flow<span style="color:#5bc4bf">.</span>request<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#34;Authorization&#34;</span>]
+</span></span><span style="display:flex;"><span>		<span style="color:#815ba4">del</span>(flow<span style="color:#5bc4bf">.</span>request<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#34;Authorization&#34;</span>])
+</span></span></code></pre></div><p>It will replace the <strong>Authorization</strong> header with the query parameter <strong>jwt</strong> and then delete the header.</p>
+<p>You can run it with:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mitmproxy -p <span style="color:#f99b15">8082</span> -s example_script.py
+</span></span></code></pre></div><p>And then use it as a proxy:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl -k -x http://localhost:8082 https://example.com -H <span style="color:#48b685">&#34;Authorization: something&#34;</span>
+</span></span></code></pre></div><p>The modified request and the response can be seen in the logs:</p>
+<p><img src="/images/pJsiYk6jrYA1f_vsQpEUCDvIxDhmdBs0.png" alt="image.png"></p>
+<p>As we can see, the <strong>Authorization</strong> header got deleted, and the <strong>jwt</strong> parameter with the value of that header was added to the request.</p>
+<h3 id="mitmproxy-script-for-testing-jwt">Mitmproxy script for testing JWT</h3>
+<p>Let’s imagine that there’s an application that gives you a JWT with an HS256 signature Here&rsquo;s that JWT - <code>eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoidXNlciJ9.ja1aHgEkWUMCJABchgx1ppiKU3eoX0coLqmOGe557zo</code>. You can easily decode it using something like <a href="https://jwt.io">jwt.io</a>:</p>
+<details>
+<summary> Warning! Bright image </summary>
+<p><img src="/images/gA2i4sf37RdnHMeVRiIgy66F0CngmkbY" alt="image.png"></p>
+</details>
+<p>You also found a secret key that was used to generate it.</p>
+<p>You see that there&rsquo;s a <strong>role</strong> parameter within the JWT body that you want to test. To do this, you can manually generate a new JWT for every payload, <strong>or</strong> you can use the following script that will do it automatically!</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">json</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">base64</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">hmac</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">hashlib</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">create_signed_token</span>(key, header, body):
+</span></span><span style="display:flex;"><span>    encoded_header <span style="color:#5bc4bf">=</span> base64<span style="color:#5bc4bf">.</span>urlsafe_b64encode(header)<span style="color:#5bc4bf">.</span>decode()<span style="color:#5bc4bf">.</span>strip(<span style="color:#48b685">&#39;=&#39;</span>)
+</span></span><span style="display:flex;"><span>    encoded_body <span style="color:#5bc4bf">=</span> base64<span style="color:#5bc4bf">.</span>urlsafe_b64encode(body)<span style="color:#5bc4bf">.</span>decode()<span style="color:#5bc4bf">.</span>strip(<span style="color:#48b685">&#39;=&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    jwt_data <span style="color:#5bc4bf">=</span> encoded_header <span style="color:#5bc4bf">+</span> <span style="color:#48b685">&#39;.&#39;</span> <span style="color:#5bc4bf">+</span> encoded_body
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    d <span style="color:#5bc4bf">=</span> hmac<span style="color:#5bc4bf">.</span>new(key, jwt_data<span style="color:#5bc4bf">.</span>encode(<span style="color:#48b685">&#39;utf-8&#39;</span>), <span style="color:#48b685">&#39;sha256&#39;</span>)
+</span></span><span style="display:flex;"><span>    dig <span style="color:#5bc4bf">=</span> d<span style="color:#5bc4bf">.</span>digest()
+</span></span><span style="display:flex;"><span>    signature <span style="color:#5bc4bf">=</span> base64<span style="color:#5bc4bf">.</span>urlsafe_b64encode(dig)<span style="color:#5bc4bf">.</span>decode()<span style="color:#5bc4bf">.</span>strip(<span style="color:#48b685">&#39;=&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">return</span> jwt_data <span style="color:#5bc4bf">+</span> <span style="color:#48b685">&#39;.&#39;</span> <span style="color:#5bc4bf">+</span> signature
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">request</span>(flow):
+</span></span><span style="display:flex;"><span>	<span style="color:#776e71"># get a payload from the &#39;jwt&#39; query parameter</span>
+</span></span><span style="display:flex;"><span>    payload <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> <span style="color:#48b685">&#34;jwt&#34;</span> <span style="color:#5bc4bf">in</span> flow<span style="color:#5bc4bf">.</span>request<span style="color:#5bc4bf">.</span>query:
+</span></span><span style="display:flex;"><span>        payload <span style="color:#5bc4bf">=</span> flow<span style="color:#5bc4bf">.</span>request<span style="color:#5bc4bf">.</span>query[<span style="color:#48b685">&#34;jwt&#34;</span>]
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">del</span>(flow<span style="color:#5bc4bf">.</span>request<span style="color:#5bc4bf">.</span>query[<span style="color:#48b685">&#34;jwt&#34;</span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#776e71">#create initial parts of JWT</span>
+</span></span><span style="display:flex;"><span>    jwt_header <span style="color:#5bc4bf">=</span> <span style="color:#48b685">b</span><span style="color:#48b685">&#39;{&#34;typ&#34;:&#34;JWT&#34;,&#34;alg&#34;:&#34;HS256&#34;}&#39;</span>
+</span></span><span style="display:flex;"><span>    jwt_body <span style="color:#5bc4bf">=</span> <span style="color:#48b685">b</span><span style="color:#48b685">&#39;{&#34;role&#34;:FUZZ}&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    secret <span style="color:#5bc4bf">=</span> <span style="color:#48b685">b</span><span style="color:#48b685">&#39;secret_key&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#776e71"># add the payload to the jwt body</span>
+</span></span><span style="display:flex;"><span>    jwt_body <span style="color:#5bc4bf">=</span> jwt_body<span style="color:#5bc4bf">.</span>replace(<span style="color:#48b685">b</span><span style="color:#48b685">&#34;FUZZ&#34;</span>, json<span style="color:#5bc4bf">.</span>dumps(payload)<span style="color:#5bc4bf">.</span>encode(<span style="color:#48b685">&#39;UTF-8&#39;</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#776e71"># generate jwt with the secret key - &#34;secret_key&#34;</span>
+</span></span><span style="display:flex;"><span>    jwt <span style="color:#5bc4bf">=</span> create_signed_token(secret, jwt_header, jwt_body)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#776e71"># set Authorization header with our jwt token</span>
+</span></span><span style="display:flex;"><span>    flow<span style="color:#5bc4bf">.</span>request<span style="color:#5bc4bf">.</span>headers[<span style="color:#48b685">&#34;Authorization&#34;</span>] <span style="color:#5bc4bf">=</span> jwt
+</span></span></code></pre></div><p><a href="https://gist.github.com/Sh1Yo/65d5828aa0636a83aaf87fe614a76306">fuzz json web tokens with mitmproxy</a></p>
+<p>Notice the <strong>jwt_header</strong>, <strong>jwt_body</strong> and <strong>secret</strong> variables. This simple script takes the <strong>jwt</strong> parameter from the query and inserts it within the JWT body. Later, it creates a signature using the <strong>HS256</strong> alg and adds a new request header &mdash; <strong>Authorization</strong> with the value of the JWT.</p>
+<h3 id="testing-the-script">Testing the script</h3>
+<p>I wrote a simple flask python3 application for this purpose. It can be found <a href="https://gist.github.com/Sh1Yo/26dfb6f9da34312b6f849a10933a335f">here</a>. The application takes the JWT token from the <strong>Authorization</strong> header and prints the value of the <strong>role</strong> parameter within the JWT body. The secret key is <strong>secret_key</strong>.</p>
+<p>Start the application and mitmproxy with the script above:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python3 main.py <span style="color:#776e71">#runs flask app on 2222 port</span>
+</span></span><span style="display:flex;"><span>mitmproxy -p <span style="color:#f99b15">8081</span> -s script.py -m socks5
+</span></span></code></pre></div><p>The <code>-m socks5</code> argument is needed because we are going to proxy burpsuite that supports only socks proxies.</p>
+<p>Verifying:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl -k --socks5 http://localhost:8081 <span style="color:#48b685">&#39;http://localhost:2222/?jwt=Something&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Your role is Something
+</span></span></code></pre></div><p>The application returns <strong>Your role is Something</strong> that confirms that the script works and mitmproxy successfully generated JWT.</p>
+<p>If we check the mitmproxy logs:</p>
+<p><img src="/images/Jkw1id6WKcJsZTVI_C2MHmm1HA0Q-VHb" alt="image.png"></p>
+<p>We can see that mitmproxy successfully replaced the <strong>jwt</strong> parameter with the <strong>Authorization</strong> header that contains a valid JWT token with the <code>{&quot;role&quot;:&quot;&quot;Something&quot;}</code> body.</p>
+<p>Now we can use all the tools to test the JWT without any additional changes. For example, sqlmap:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sqlmap -u http://localhost:2222/?jwt<span style="color:#5bc4bf">=</span>something --proxy socks5://localhost:8081
+</span></span></code></pre></div><p>Or even all of the burpsuite tools. For this, you need to go to User options &mdash;&gt; SOCKS Proxy and write down the ip and the port of the mitmproxy. Now you can audit it manually via repeater:</p>
+<p><img src="/images/FxGxC0BqER_0SJwXlRw05GkA8zQz525p" alt="image.png"></p>
+<p>Or use tools like intruder.</p>
+<h3 id="bonus-integration-with-x8">Bonus: integration with x8</h3>
+<p>With <a href="https://github.com/Sh1Yo/x8">x8</a>, it’s even possible to search for parameters within the JWT token. For this purpose, replace <code>jwt_body = b'{&quot;role&quot;:FUZZ}'</code> with <code>jwt_body = b'{&quot;role&quot;:&quot;user&quot;, FUZZ}'</code> and <code>json.dumps(payload).encode('UTF-8')</code> with <code>payload.encode('UTF-8')</code> in the mitmproxy script.</p>
+<p>Now you can run it with something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>x8 -u http://localhost:2222/?jwt<span style="color:#5bc4bf">=</span>%s -t json -w wordlist -x socks5://localhost:8081
+</span></span></code></pre></div><p>The tool will try to find parameters within the JWT body aside the <strong>role</strong> one.</p>
+<p><img src="/images/K4MSYkv5NZjQ3odnmTFAAwS1PMqDtHP_" alt="image.png"></p>
+<p>As we can see, the <strong>Authorization</strong> header became longer because of all those parameters. Moreover, it turned out that there were some hidden parameters within pyjwt itself!</p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/web">web</a></li>
+					
+					<li><a href="/tags/jwt">jwt</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+	</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/sh1yo" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/sh1yo_/" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2023  © sh1yo |  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NTWQD4HQWT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-NTWQD4HQWT', { 'anonymize_ip': false });
+}
+</script>
+<Paste><script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

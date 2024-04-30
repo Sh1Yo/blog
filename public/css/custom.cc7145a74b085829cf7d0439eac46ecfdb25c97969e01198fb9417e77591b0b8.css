@@ -1,0 +1,27 @@
+img {
+    border: 0px solid rgb(192, 192, 192);
+  }
+
+  /*code {
+    font-family: monospace;
+    font-weight: 400;
+    background-color:transparent;
+    color: rgb(112, 112, 120);
+  }*/
+
+  code {
+    font-family: monospace;
+    font-weight: 450;
+    background-color:#333333;
+    color: rgb(200, 200, 200);
+    font-size: 17px;
+  }
+
+  p {
+    font-size: 19px;
+    color: rgb(169, 169, 179)
+  }
+
+  strong {
+    color: rgb(199, 199, 209)
+  }

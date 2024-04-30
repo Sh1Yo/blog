@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Empty</title>
+    <link>/post/</link>
+    <description>Recent content in Posts on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Sun, 08 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Real World CTF 2023] The cult of 8 bit</title>
+      <link>/post/thecultof8bit/</link>
+      <pubDate>Sun, 08 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/post/thecultof8bit/</guid>
+      <description>In this writeup, I will show my solution for The cult of 8 bit challenge from Real World CTF 2023. It was a client-side challenge where you must leak the admin post id to get the flag. I solved it in an unintended way by using the Same Origin Method Execution attack with xsleaks.
+Description Exploring the app TODOs Callbacks SOME attack Example Solution Description After downloading the source code, we can see a simple expressjs note-storing service.</description>
+    </item>
+    
+    <item>
+      <title>[ASIS CTF 2022] Firewalled</title>
+      <link>/post/firewalled/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/post/firewalled/</guid>
+      <description>Here&amp;rsquo;s my writeup on the Firewalled ctf challenge from ASIS CTF 2022. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams.
+Description We&amp;rsquo;re given a docker-compose.yml file with two services: flag-container and firewalled-curl. The second one is exposed to the internet via the 8000 port. Both of them are flask apps behind apache.
+docker-compose.yml:
+version: &amp;#34;3.9&amp;#34; services: flag-container: build: .</description>
+    </item>
+    
+    <item>
+      <title>[CTFZone 2022] ProxyHell</title>
+      <link>/post/proxyhell/</link>
+      <pubDate>Sat, 27 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/post/proxyhell/</guid>
+      <description>I do like proxy-related challenges, so I decided to share my solution for the CTFZone ProxyHell challenge. Despite it wasn’t a hard task, only 3 teams solved it in the end.
+Initial observing We have a docker-compose.yml file with 5 images - apache, varnish, nginx-ldap, nginx, openldap. If we do grep -r flag, we will see that the flag is within the index.html page: app/index.html:&amp;lt;h1&amp;gt;CTFZone{Test_flag}&amp;lt;/h1&amp;gt;. If we try to access the root of the server &amp;ndash; we will get a 403 forbidden error:</description>
+    </item>
+    
+    <item>
+      <title>Fuzzing JWT</title>
+      <link>/post/fuzzing_jwt/</link>
+      <pubDate>Fri, 29 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/post/fuzzing_jwt/</guid>
+      <description>JSON Web Tokens are usually used to store the identity of authenticated users. JWT has a structure of two JSON objects (header and body) and a signature. They&amp;rsquo;re base64 encoded and divided by dot:
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoidXNlciJ9.ja1aHgEkWUMCJABchgx1ppiKU3eoX0coLqmOGe557zo
+&amp;mdash; example JWT
+Sometimes you may end up in a situation where you need to test a JWT. Either you can sign your own JWT, or you want to test just the header part. But due to the structure of a JWT, it’s impossible to pass it directly to the tools like sqlmap or burp intruder.</description>
+    </item>
+    
+    <item>
+      <title>[socket.io] Cross-Site Websockets Hijacking</title>
+      <link>/post/websocket_hijacking/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/websocket_hijacking/</guid>
+      <description>The socket.io module was vulnerable to cross-site websocker hijacking attack due to the incorrect parsing of the http Origin header. The vulnerability was found in 2.3.0 version.
+Socket.IO enables real-time bidirectional event-based communication
+Links original report.
+Proof of concept: app.js:
+var app = require(&amp;#39;express&amp;#39;)(); var http = require(&amp;#39;http&amp;#39;).createServer(app); var io = require(&amp;#39;socket.io&amp;#39;)(http); io.origins([&amp;#39;http://localhost:80&amp;#39;]); //we believe that this module will decline other origins app.get(&amp;#39;/&amp;#39;, (req, res) =&amp;gt; { res.sendFile(__dirname + &amp;#39;/index.html&amp;#39;); }); io.</description>
+    </item>
+    
+    <item>
+      <title>SEC-596</title>
+      <link>/post/sec-596/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/sec-596/</guid>
+      <description>Invalid UTF-8 characters could trigger cPanel to use the Legacy Login page. This page did not adequately encode output. This could allow for an attacker to inject arbitrary JavaScript code into the rendered page.
+Links cpanel disclosure
+Proof of concept https://[target]:2083/login?user=sth%22+onfocus=%22alert()%22+id=%22xss%22+%22%ff#xss</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html><head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>[socket.io] Cross-Site Websockets Hijacking - Empty</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="The socket.io module was vulnerable to cross-site websocker hijacking attack due to the incorrect parsing of the http Origin header." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="[socket.io] Cross-Site Websockets Hijacking" />
+<meta property="og:description" content="The socket.io module was vulnerable to cross-site websocker hijacking attack due to the incorrect parsing of the http Origin header." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/post/websocket_hijacking/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-11-29T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-11-29T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="[socket.io] Cross-Site Websockets Hijacking"/>
+<meta name="twitter:description" content="The socket.io module was vulnerable to cross-site websocker hijacking attack due to the incorrect parsing of the http Origin header."/>
+<script src="js/feather.min.js"></script>
+	
+	
+        <link href="/css/fonts.b685ac6f654695232de7b82a9143a46f9e049c8e3af3a21d9737b01f4be211d1.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="/css/main.4ddabd7503f7a39f08b1332805fc618e47fe65490f3c282a3dad46df59697a76.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="/css/dark.1b1ad67986b5fb2bdf5cdb491e362b3f0a64f1604dde010230e849731b54e308.css"   />
+	
+	
+	
+		
+		
+		<link rel="stylesheet" type="text/css" href="/css/custom.cc7145a74b085829cf7d0439eac46ecfdb25c97969e01198fb9417e77591b0b8.css">
+		
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="">Empty</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/ctf">CTF writeups</a>
+		
+		<a href="/vulnerabilities">Vulnerabilities</a>
+		
+		<a href="/tools">Tools</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">[socket.io] Cross-Site Websockets Hijacking</h1>
+			<div class="meta">Posted on Nov 29, 2021</div>
+		</div>
+		
+
+		<section class="body">
+			<p>The <a href="https://www.npmjs.com/package/socket.io">socket.io</a> module was vulnerable to cross-site websocker hijacking attack due to the incorrect parsing of the http <strong>Origin</strong> header.
+The vulnerability was found in 2.3.0 version.</p>
+<blockquote>
+<p>Socket.IO enables real-time bidirectional event-based communication</p>
+</blockquote>
+<h2 id="links">Links</h2>
+<p><a href="https://hackerone.com/reports/931197">original report</a>.</p>
+<h2 id="proof-of-concept">Proof of concept:</h2>
+<p><strong>app.js</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#815ba4">var</span> <span style="color:#06b6ef">app</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">require</span>(<span style="color:#48b685">&#39;express&#39;</span>)();
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">var</span> <span style="color:#06b6ef">http</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">require</span>(<span style="color:#48b685">&#39;http&#39;</span>).<span style="color:#06b6ef">createServer</span>(<span style="color:#06b6ef">app</span>);
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">var</span> <span style="color:#06b6ef">io</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">require</span>(<span style="color:#48b685">&#39;socket.io&#39;</span>)(<span style="color:#06b6ef">http</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">io</span>.<span style="color:#06b6ef">origins</span>([<span style="color:#48b685">&#39;http://localhost:80&#39;</span>]); <span style="color:#776e71">//we believe that this module will decline other origins
+</span></span></span><span style="display:flex;"><span><span style="color:#776e71"></span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">app</span>.<span style="color:#06b6ef">get</span>(<span style="color:#48b685">&#39;/&#39;</span>, (<span style="color:#06b6ef">req</span>, <span style="color:#06b6ef">res</span>) =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#06b6ef">res</span>.<span style="color:#06b6ef">sendFile</span>(<span style="color:#06b6ef">__dirname</span> <span style="color:#5bc4bf">+</span> <span style="color:#48b685">&#39;/index.html&#39;</span>);
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">io</span>.<span style="color:#06b6ef">on</span>(<span style="color:#48b685">&#39;connection&#39;</span>, (<span style="color:#06b6ef">socket</span>) =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#06b6ef">console</span>.<span style="color:#06b6ef">log</span>(<span style="color:#48b685">&#39;a user connected&#39;</span>);
+</span></span><span style="display:flex;"><span>});
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#06b6ef">http</span>.<span style="color:#06b6ef">listen</span>(<span style="color:#f99b15">80</span>, () =&gt; {
+</span></span><span style="display:flex;"><span>  <span style="color:#06b6ef">console</span>.<span style="color:#06b6ef">log</span>(<span style="color:#48b685">&#39;listening on *:80&#39;</span>);
+</span></span><span style="display:flex;"><span>});
+</span></span></code></pre></div><p><strong>index.html</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#5bc4bf">script</span> <span style="color:#06b6ef">src</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">&#34;/socket.io/socket.io.js&#34;</span>&gt;&lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#5bc4bf">script</span>&gt;
+</span></span><span style="display:flex;"><span>                <span style="color:#815ba4">var</span> <span style="color:#06b6ef">socket</span> <span style="color:#5bc4bf">=</span> <span style="color:#06b6ef">io</span>();
+</span></span><span style="display:flex;"><span>        &lt;/<span style="color:#5bc4bf">script</span>&gt;
+</span></span></code></pre></div><p>Initial connection:</p>
+<p><img src="/images/5f2fc8e593ee240326150af16f94a10f625b902b.png" alt="Request and response in burpsuite"></p>
+<p><strong>HTTP/1.1 101 Switching Protocols</strong> means that the connection was successful.</p>
+<ul>
+<li>Try to change origin to <code>something.io</code>. <code>HTTP/1.1 400 Bad Request</code> is returned and it is good, because we allowed only localhost origin in <strong>app.js</strong>.</li>
+</ul>
+<p><img src="/images/4726bb42d5c025d9fc1d8ff51158c5730cf7d93f.png" alt="Bad request with origin like something.io"></p>
+<ul>
+<li>Change origin to <strong>localhost`something.io</strong></li>
+</ul>
+<p><img src="/images/eddbb41626cde8b0a25016d7398c83572438864f.png" alt="Bypassed"></p>
+<p>As we can see - the module thinks that the origin is localhost while Safari thinks that it is a subdomain of something.io. Moreover, Safari isn&rsquo;t the only affected browser. This works in latest Firefox as well. Just replace <strong>`</strong> with <strong>$</strong>.</p>
+<h2 id="impact">Impact</h2>
+<p>After the successful connection from the attacker&rsquo;s domain, the attacker can receive and send websocket messages on behalf of a user.</p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/websockets">websockets</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+	</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/sh1yo" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/sh1yo_/" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2023  © sh1yo |  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NTWQD4HQWT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-NTWQD4HQWT', { 'anonymize_ip': false });
+}
+</script>
+<Paste><script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

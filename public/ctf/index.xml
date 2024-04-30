@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Ctfs on Empty</title>
+    <link>/ctf/</link>
+    <description>Recent content in Ctfs on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Sun, 08 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="/ctf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Real World CTF 2023] The cult of 8 bit</title>
+      <link>/ctf/thecultof8bit/</link>
+      <pubDate>Sun, 08 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/ctf/thecultof8bit/</guid>
+      <description>In this writeup, I will show my solution for The cult of 8 bit challenge from Real World CTF 2023. It was a client-side challenge where you must leak the admin post id to get the flag. I solved it in an unintended way by using the Same Origin Method Execution attack with xsleaks.
+Description Exploring the app TODOs Callbacks SOME attack Example Solution Description After downloading the source code, we can see a simple expressjs note-storing service.</description>
+    </item>
+    
+    <item>
+      <title>[ASIS CTF 2022] Firewalled</title>
+      <link>/ctf/firewalled/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/ctf/firewalled/</guid>
+      <description>Here&amp;rsquo;s my writeup on the Firewalled ctf challenge from ASIS CTF 2022. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams.
+Description We&amp;rsquo;re given a docker-compose.yml file with two services: flag-container and firewalled-curl. The second one is exposed to the internet via the 8000 port. Both of them are flask apps behind apache.
+docker-compose.yml:
+version: &amp;#34;3.9&amp;#34; services: flag-container: build: .</description>
+    </item>
+    
+    <item>
+      <title>[CTFZone 2022] ProxyHell</title>
+      <link>/ctf/proxyhell/</link>
+      <pubDate>Sat, 27 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/ctf/proxyhell/</guid>
+      <description>I do like proxy-related challenges, so I decided to share my solution for the CTFZone ProxyHell challenge. Despite it wasn’t a hard task, only 3 teams solved it in the end.
+Initial observing We have a docker-compose.yml file with 5 images - apache, varnish, nginx-ldap, nginx, openldap. If we do grep -r flag, we will see that the flag is within the index.html page: app/index.html:&amp;lt;h1&amp;gt;CTFZone{Test_flag}&amp;lt;/h1&amp;gt;. If we try to access the root of the server &amp;ndash; we will get a 403 forbidden error:</description>
+    </item>
+    
+  </channel>
+</rss>

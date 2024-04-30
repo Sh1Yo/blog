@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>jwt on Empty</title>
+    <link>/tags/jwt/</link>
+    <description>Recent content in jwt on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Fri, 29 Jul 2022 00:00:00 +0000</lastBuildDate><atom:link href="/tags/jwt/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Fuzzing JWT</title>
+      <link>/klafjshd/fuzzing_jwt/</link>
+      <pubDate>Fri, 29 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/klafjshd/fuzzing_jwt/</guid>
+      <description>JSON Web Tokens are usually used to store the identity of authenticated users. JWT has a structure of two JSON objects (header and body) and a signature. They&amp;rsquo;re base64 encoded and divided by dot:
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoidXNlciJ9.ja1aHgEkWUMCJABchgx1ppiKU3eoX0coLqmOGe557zo
+&amp;mdash; example JWT
+Sometimes you may end up in a situation where you need to test a JWT. Either you can sign your own JWT, or you want to test just the header part. But due to the structure of a JWT, it’s impossible to pass it directly to the tools like sqlmap or burp intruder.</description>
+    </item>
+    
+    <item>
+      <title>Fuzzing JWT</title>
+      <link>/post/fuzzing_jwt/</link>
+      <pubDate>Fri, 29 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/post/fuzzing_jwt/</guid>
+      <description>JSON Web Tokens are usually used to store the identity of authenticated users. JWT has a structure of two JSON objects (header and body) and a signature. They&amp;rsquo;re base64 encoded and divided by dot:
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoidXNlciJ9.ja1aHgEkWUMCJABchgx1ppiKU3eoX0coLqmOGe557zo
+&amp;mdash; example JWT
+Sometimes you may end up in a situation where you need to test a JWT. Either you can sign your own JWT, or you want to test just the header part. But due to the structure of a JWT, it’s impossible to pass it directly to the tools like sqlmap or burp intruder.</description>
+    </item>
+    
+  </channel>
+</rss>

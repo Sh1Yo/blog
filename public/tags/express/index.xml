@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>express on Empty</title>
+    <link>/tags/express/</link>
+    <description>Recent content in express on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Sun, 08 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="/tags/express/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Real World CTF 2023] The cult of 8 bit</title>
+      <link>/ctf/thecultof8bit/</link>
+      <pubDate>Sun, 08 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/ctf/thecultof8bit/</guid>
+      <description>In this writeup, I will show my solution for The cult of 8 bit challenge from Real World CTF 2023. It was a client-side challenge where you must leak the admin post id to get the flag. I solved it in an unintended way by using the Same Origin Method Execution attack with xsleaks.
+Description Exploring the app TODOs Callbacks SOME attack Example Solution Description After downloading the source code, we can see a simple expressjs note-storing service.</description>
+    </item>
+    
+    <item>
+      <title>[Real World CTF 2023] The cult of 8 bit</title>
+      <link>/post/thecultof8bit/</link>
+      <pubDate>Sun, 08 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/post/thecultof8bit/</guid>
+      <description>In this writeup, I will show my solution for The cult of 8 bit challenge from Real World CTF 2023. It was a client-side challenge where you must leak the admin post id to get the flag. I solved it in an unintended way by using the Same Origin Method Execution attack with xsleaks.
+Description Exploring the app TODOs Callbacks SOME attack Example Solution Description After downloading the source code, we can see a simple expressjs note-storing service.</description>
+    </item>
+    
+  </channel>
+</rss>

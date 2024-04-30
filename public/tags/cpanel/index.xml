@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>cpanel on Empty</title>
+    <link>/tags/cpanel/</link>
+    <description>Recent content in cpanel on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Mon, 29 Nov 2021 00:00:00 +0000</lastBuildDate><atom:link href="/tags/cpanel/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SEC-596</title>
+      <link>/post/sec-596/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/sec-596/</guid>
+      <description>Invalid UTF-8 characters could trigger cPanel to use the Legacy Login page. This page did not adequately encode output. This could allow for an attacker to inject arbitrary JavaScript code into the rendered page.
+Links cpanel disclosure
+Proof of concept https://[target]:2083/login?user=sth%22+onfocus=%22alert()%22+id=%22xss%22+%22%ff#xss</description>
+    </item>
+    
+    <item>
+      <title>SEC-596</title>
+      <link>/vulnerabilities/sec-596/</link>
+      <pubDate>Mon, 29 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/vulnerabilities/sec-596/</guid>
+      <description>Invalid UTF-8 characters could trigger cPanel to use the Legacy Login page. This page did not adequately encode output. This could allow for an attacker to inject arbitrary JavaScript code into the rendered page.
+Links cpanel disclosure
+Proof of concept https://[target]:2083/login?user=sth%22+onfocus=%22alert()%22+id=%22xss%22+%22%ff#xss</description>
+    </item>
+    
+  </channel>
+</rss>

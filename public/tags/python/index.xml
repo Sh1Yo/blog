@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>python on Empty</title>
+    <link>/tags/python/</link>
+    <description>Recent content in python on Empty</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© sh1yo</copyright>
+    <lastBuildDate>Sun, 16 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[ASIS CTF 2022] Firewalled</title>
+      <link>/ctf/firewalled/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/ctf/firewalled/</guid>
+      <description>Here&amp;rsquo;s my writeup on the Firewalled ctf challenge from ASIS CTF 2022. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams.
+Description We&amp;rsquo;re given a docker-compose.yml file with two services: flag-container and firewalled-curl. The second one is exposed to the internet via the 8000 port. Both of them are flask apps behind apache.
+docker-compose.yml:
+version: &amp;#34;3.9&amp;#34; services: flag-container: build: .</description>
+    </item>
+    
+    <item>
+      <title>[ASIS CTF 2022] Firewalled</title>
+      <link>/post/firewalled/</link>
+      <pubDate>Sun, 16 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/post/firewalled/</guid>
+      <description>Here&amp;rsquo;s my writeup on the Firewalled ctf challenge from ASIS CTF 2022. The task was about an old http feature – line folding of headers. In the end, it was solved by 15 teams.
+Description We&amp;rsquo;re given a docker-compose.yml file with two services: flag-container and firewalled-curl. The second one is exposed to the internet via the 8000 port. Both of them are flask apps behind apache.
+docker-compose.yml:
+version: &amp;#34;3.9&amp;#34; services: flag-container: build: .</description>
+    </item>
+    
+  </channel>
+</rss>
