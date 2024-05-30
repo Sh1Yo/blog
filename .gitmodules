@@ -1,6 +1,3 @@
 [submodule "themes/archie"]
 	path = themes/archie
 	url = https://github.com/athul/archie
-[submodule "themes/pickle"]
-	path = themes/pickle
-	url = https://github.com/mismith0227/hugo_theme_pickles
