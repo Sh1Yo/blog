@@ -1,0 +1,6 @@
+[submodule "themes/anubis"]
+	path = themes/anubis
+	url = https://github.com/mitrichius/hugo-theme-anubis.git
+[submodule "themes/pickle"]
+	path = themes/pickle
+	url = https://github.com/mismith0227/hugo_theme_pickles
