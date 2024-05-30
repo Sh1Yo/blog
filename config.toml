@@ -1,3 +1,4 @@
+baseURL = "https://sh1yo.github.io/"
 # baseURL = "https://sh1yo.art/"
 languageCode = "en-us"
 title = "Empty"
